@@ -122,6 +122,13 @@
   }
   .card-type.contest { color: #5cc8ff; }
   .card-type.course { color: #8affb0; }
+  .card-level {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;
+    padding: 4px 8px; border-radius: 8px;
+  }
+  .card-level.l1 { background: #1e2a1e; color: #8affb0; }
+  .card-level.l2 { background: #2a2418; color: #ffc45c; }
+  .card-level.l3 { background: #2a1820; color: #ff6a8a; }
   .card-title { font-size: 17px; font-weight: 700; margin-bottom: 8px; line-height: 1.3; }
   .card-meta { font-size: 13px; color: #8a8a95; line-height: 1.6; }
   .card-source { font-size: 11px; color: #5a5a68; margin-top: 10px; font-style: italic; }
@@ -137,10 +144,6 @@
   }
   .back:hover { border-color: #3a3a48; }
   .screen-header h1 { font-size: 19px; font-weight: 700; }
-  .next-step-card { background: linear-gradient(135deg, #ff6a3d 0%, #ff3d77 100%); border-radius: 20px; padding: 24px; margin-bottom: 16px; }
-  .next-step-card .tag { font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; opacity: 0.85; margin-bottom: 12px; }
-  .next-step-card h2 { font-size: 20px; font-weight: 800; margin-bottom: 10px; line-height: 1.3; }
-  .next-step-card p { font-size: 14px; opacity: 0.95; line-height: 1.5; }
   .feedback { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 20px 0; }
   .feedback button {
     background: #1c1c24; border: 2px solid #2a2a35;
@@ -193,9 +196,6 @@
     .screen-header { padding: 16px 16px 0; }
     .screen-header h1 { font-size: 17px; }
     .back { width: 38px; height: 38px; font-size: 16px; }
-    .next-step-card { padding: 20px; }
-    .next-step-card h2 { font-size: 18px; }
-    .next-step-card p { font-size: 13px; }
     .feedback button { padding: 16px 6px; font-size: 22px; }
     .feedback button small { font-size: 10px; }
     .path-direction { font-size: 20px; }
@@ -348,27 +348,23 @@
       <div class="path-direction" id="path-direction">🎨 Дизайн</div>
       <div class="path-sub">Твой прогресс</div>
 
-      <div class="progress">
+      <div class="progress" id="path-progress">
         <span class="done"></span>
-        <span class="done"></span>
+        <span></span>
         <span></span>
       </div>
 
       <div class="path-item">
         <div class="dot done">✓</div>
-        Узнал о направлении
-      </div>
-      <div class="path-item">
-        <div class="dot done">✓</div>
-        Попробовал первое задание
+        Попробовать
       </div>
       <div class="path-item">
         <div class="dot active">🔥</div>
-        Понравилось
+        Углубиться
       </div>
       <div class="path-item">
         <div class="dot locked">🔒</div>
-        Следующая возможность
+        Показать результат
       </div>
 
       <button class="btn" style="margin-top:20px;" onclick="nextRecommendation()">Посмотреть следующий шаг</button>
@@ -387,6 +383,8 @@
   let selectedInterest = 'design';
   let selectedGrade = '10';
   let rejectedIds = [];
+  let lastFeedback = null;
+  let currentOppId = null;
 
   document.querySelectorAll('#interest-chips .chip').forEach(chip => {
     chip.addEventListener('click', () => {
@@ -410,227 +408,230 @@
     });
   });
 
+  // ===== ДАННЫЕ =====
+  // topic: it / design / science / business / media / unknown
+  // level: 1 (попробовать) / 2 (углубиться) / 3 (показать результат)
   const dataByInterest = {
     it: {
       "1-4": [
-        { id:'it-1-4-a', type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час<br>До 29 июня', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Ты в младших классах. Эта олимпиада про безопасность — интересно и полезно.', format:'Онлайн, задания-ситуации', time:'~1 час', deadline:'До 29 июня', nextTitle:'Зарегистрируйся и пройди олимпиаду', nextDesc:'Это займёт около часа. Ты получишь сертификат или диплом.' },
-        { id:'it-1-4-b', type:'Курс', typeClass:'course', title:'Графический дизайн для младших школьников', meta:'8+ лет · 9 уроков<br>Доступ сразу', source:'Источник: Stepik', url:'https://stepik.org/course/263579', why:'Ты можешь попробовать себя в дизайне с простых видеоуроков.', format:'Онлайн-курс, видео', time:'~2 часа', deadline:'Без дедлайна', nextTitle:'Открой курс и посмотри первый урок', nextDesc:'Просто начни — видео короткие и понятные.' },
-        { id:'it-1-4-c', type:'Конкурс', typeClass:'contest', title:'Конкурс «ТехноСтарт: идеи юных инженеров»', meta:'1–4 класс · ~1 час<br>01.10–15.11', source:'Источник: Лицей №176', url:'https://liczejatyakshevayugorsk-r86.gosweb.gosuslugi.ru/', why:'Ты можешь придумать свою идею и показать её.', format:'Проект', time:'~1 час', deadline:'15 ноября', nextTitle:'Придумай простую идею', nextDesc:'Например, устройство для дома или школы. Опиши её.' }
+        { id:'it-1-4-1', topic:'it', level:1, type:'Курс', typeClass:'course', title:'Графический дизайн для младших', meta:'8+ лет · 9 уроков · Доступ сразу', source:'Источник: Stepik', url:'https://stepik.org/course/263579', why:'Ты в младших классах. Начни с простого — попробуй, что такое дизайн.', format:'Онлайн-курс, видео', time:'~2 часа', deadline:'Без дедлайна', nextTitle:'Открой курс и посмотри первый урок', nextDesc:'Видео короткие и понятные.' },
+        { id:'it-1-4-2', topic:'it', level:2, type:'Олимпиада', typeClass:'', title:'Олимпиада «Клеверенок»', meta:'1–4 класс · ~1 час · 85+ олимпиад', source:'Источник: Клевердети', url:'https://клевердети.рф', why:'Ты уже попробовал. Теперь проверь себя на олимпиаде.', format:'Онлайн', time:'~1 час', deadline:'Без дедлайна', nextTitle:'Выбери олимпиаду', nextDesc:'Математика, русский — что ближе.' },
+        { id:'it-1-4-3', topic:'it', level:3, type:'Конкурс', typeClass:'contest', title:'Конкурс «ТехноСтарт»', meta:'1–4 класс · ~1 час · до 15.11', source:'Источник: Лицей №176', url:'https://liczejatyakshevayugorsk-r86.gosweb.gosuslugi.ru/', why:'Ты уже попробовал и проверил себя. Пора показать результат.', format:'Проект', time:'~1 час', deadline:'15 ноября', nextTitle:'Придумай идею и оформи', nextDesc:'Например, устройство для дома или школы.' }
       ],
       "5-6": [
-        { id:'it-5-6-a', type:'Олимпиада', typeClass:'', title:'НТО Юниоры', meta:'5–7 класс · ~2 часа<br>До 9 ноября', source:'Источник: НТО', url:'https://ntcontest.ru/', why:'Ты в 5–6 классе. НТО Юниоры — командные инженерные соревнования.', format:'Онлайн, командные задачи', time:'~2 часа', deadline:'9 ноября', nextTitle:'Зарегистрируйся на НТО Юниоры', nextDesc:'Выбери сферу: игротех, ИИтех, роботех и другие.' },
-        { id:'it-5-6-b', type:'Олимпиада', typeClass:'', title:'Олимпиада «Альтаир. Звездный вызов»', meta:'5–11 класс · ~1,5 часа<br>4–12 октября', source:'Источник: Альтаир', url:'https://altairdonso.ru/', why:'Ты можешь проверить знания в космонавтике и астрономии.', format:'Онлайн, задания', time:'~1,5 часа', deadline:'12 октября', nextTitle:'Пройди олимпиаду по космонавтике', nextDesc:'Это займёт около 1,5 часа. Интересно, если любишь космос.' },
-        { id:'it-5-6-c', type:'Курс', typeClass:'course', title:'Основы Python на Stepik', meta:'5+ класс · 40 минут<br>Доступ сразу', source:'Источник: Stepik', url:'https://stepik.org/course/63085', why:'Ты можешь начать программировать с простого языка.', format:'Онлайн-курс', time:'~40 минут', deadline:'Без дедлайна', nextTitle:'Пройди первый раздел курса', nextDesc:'Просто начни — Python простой для старта.' }
+        { id:'it-5-6-1', topic:'it', level:1, type:'Курс', typeClass:'course', title:'Основы Python на Stepik', meta:'5+ класс · 40 минут · Доступ сразу', source:'Источник: Stepik', url:'https://stepik.org/course/63085', why:'Ты в 5–6 классе. Python — самый простой язык для старта.', format:'Онлайн-курс', time:'~40 минут', deadline:'Без дедлайна', nextTitle:'Пройди первый раздел курса', nextDesc:'Просто начни.' },
+        { id:'it-5-6-2', topic:'it', level:2, type:'Олимпиада', typeClass:'', title:'Олимпиада «Альтаир. Звездный вызов»', meta:'5–11 класс · ~1,5 часа · 4–12 октября', source:'Источник: Альтаир', url:'https://altairdonso.ru/', why:'Ты попробовал основы. Теперь проверь себя.', format:'Онлайн', time:'~1,5 часа', deadline:'12 октября', nextTitle:'Пройди олимпиаду', nextDesc:'Интересно, если любишь космос.' },
+        { id:'it-5-6-3', topic:'it', level:3, type:'Олимпиада', typeClass:'', title:'НТО Юниоры', meta:'5–7 класс · ~2 часа · до 9 ноября', source:'Источник: НТО', url:'https://ntcontest.ru/', why:'Ты готов показать результат. НТО Юниоры — командные инженерные соревнования.', format:'Онлайн, командный', time:'~2 часа', deadline:'9 ноября', nextTitle:'Собери команду и зарегистрируйся', nextDesc:'Выбери сферу: игротех, ИИтех, роботех.' }
       ],
       "7": [
-        { id:'it-7-a', type:'Олимпиада', typeClass:'', title:'НТО Юниоры (7 класс)', meta:'5–7 класс · ~2 часа<br>До 9 ноября', source:'Источник: НТО', url:'https://ntcontest.ru/', why:'Ты в 7 классе. НТО Юниоры — отличный старт в инженерии.', format:'Командный, онлайн', time:'~2 часа', deadline:'9 ноября', nextTitle:'Выбери сферу НТО Юниоры', nextDesc:'Игротех, ИИтех, роботех — выбери, что ближе.' },
-        { id:'it-7-b', type:'Олимпиада', typeClass:'', title:'Олимпиада по искусственному интеллекту', meta:'8–11 класс · ~2 часа<br>До 6 октября', source:'Источник: ai.edu.gov.ru', url:'https://ai.edu.gov.ru/', why:'Ты можешь попробовать, если интересуешься ИИ.', format:'Онлайн', time:'~2 часа', deadline:'6 октября', nextTitle:'Зарегистрируйся на олимпиаду по ИИ', nextDesc:'Проверь свои силы в задачах на нейросети.' },
-        { id:'it-7-c', type:'Курс', typeClass:'course', title:'Код будущего', meta:'8–11 класс · 144 часа<br>Запись открыта', source:'Источник: Госуслуги', url:'https://www.gosuslugi.ru/futurecode', why:'Бесплатные курсы от государства. Для 7 класса пока не подходит по возрасту, но можно посмотреть.', format:'Онлайн/офлайн', time:'144 часа', deadline:'Запись открыта', nextTitle:'Посмотри направления курсов', nextDesc:'Подготовься к 8 классу.' }
+        { id:'it-7-1', topic:'it', level:1, type:'Курс', typeClass:'course', title:'Основы Python', meta:'5+ класс · 40 минут · Доступ сразу', source:'Источник: Stepik', url:'https://stepik.org/course/63085', why:'Ты в 7 классе. Python — простой старт.', format:'Онлайн-курс', time:'~40 минут', deadline:'Без дедлайна', nextTitle:'Пройди первый раздел', nextDesc:'Просто начни.' },
+        { id:'it-7-2', topic:'it', level:2, type:'Олимпиада', typeClass:'', title:'НТО Юниоры', meta:'5–7 класс · ~2 часа · до 9 ноября', source:'Источник: НТО', url:'https://ntcontest.ru/', why:'Ты попробовал Python. Теперь командные задачи.', format:'Командный, онлайн', time:'~2 часа', deadline:'9 ноября', nextTitle:'Зарегистрируйся на НТО Юниоры', nextDesc:'Выбери сферу.' },
+        { id:'it-7-3', topic:'it', level:3, type:'Олимпиада', typeClass:'', title:'Олимпиада по ИИ', meta:'8–11 класс · ~2 часа · до 6 октября', source:'Источник: ai.edu.gov.ru', url:'https://ai.edu.gov.ru/', why:'Ты готов к серьёзному результату. Попробуй ИИ.', format:'Онлайн', time:'~2 часа', deadline:'6 октября', nextTitle:'Зарегистрируйся на олимпиаду по ИИ', nextDesc:'Проверь свои силы.' }
       ],
       "8": [
-        { id:'it-8-a', type:'Курс', typeClass:'course', title:'Код будущего (Python)', meta:'8–11 класс · 144 часа<br>Запись открыта', source:'Источник: Госуслуги', url:'https://www.gosuslugi.ru/futurecode', why:'Ты в 8 классе. Бесплатные курсы по Python, C++, AI.', format:'Онлайн/офлайн', time:'144 часа', deadline:'Запись открыта', nextTitle:'Подай заявку на курс «Код будущего»', nextDesc:'Это займёт 10 минут. Выбери Python или другой язык.' },
-        { id:'it-8-b', type:'Олимпиада', typeClass:'', title:'НТО (старший трек)', meta:'8–11 класс · ~3 часа<br>До 22 октября', source:'Источник: НТО', url:'https://ntcontest.ru/', why:'Ты в 8 классе. НТО — главная инженерная олимпиада.', format:'Командный, онлайн', time:'~3 часа', deadline:'22 октября', nextTitle:'Зарегистрируйся на НТО', nextDesc:'Выбери профиль: анализ данных, роботы, VR и другие.' },
-        { id:'it-8-c', type:'Олимпиада', typeClass:'', title:'Олимпиада по искусственному интеллекту', meta:'8–11 класс · ~2 часа<br>До 6 октября', source:'Источник: ai.edu.gov.ru', url:'https://ai.edu.gov.ru/', why:'Ты можешь проверить себя в ИИ.', format:'Онлайн', time:'~2 часа', deadline:'6 октября', nextTitle:'Зарегистрируйся на олимпиаду по ИИ', nextDesc:'Проверь свои силы в задачах на нейросети.' }
+        { id:'it-8-1', topic:'it', level:1, type:'Курс', typeClass:'course', title:'Код будущего (Python)', meta:'8–11 класс · 144 часа · Запись открыта', source:'Источник: Госуслуги', url:'https://www.gosuslugi.ru/futurecode', why:'Ты в 8 классе. Бесплатные курсы — идеальный старт.', format:'Онлайн/офлайн', time:'144 часа', deadline:'Запись открыта', nextTitle:'Подай заявку на «Код будущего»', nextDesc:'Выбери Python.' },
+        { id:'it-8-2', topic:'it', level:2, type:'Олимпиада', typeClass:'', title:'НТО (старший трек)', meta:'8–11 класс · ~3 часа · до 22 октября', source:'Источник: НТО', url:'https://ntcontest.ru/', why:'Ты попробовал основы. Углубись — поучаствуй в НТО.', format:'Командный, онлайн', time:'~3 часа', deadline:'22 октября', nextTitle:'Зарегистрируйся на НТО', nextDesc:'Выбери профиль.' },
+        { id:'it-8-3', topic:'it', level:3, type:'Олимпиада', typeClass:'', title:'Олимпиада по ИИ', meta:'8–11 класс · ~2 часа · до 6 октября', source:'Источник: ai.edu.gov.ru', url:'https://ai.edu.gov.ru/', why:'Покажи результат в ИИ.', format:'Онлайн', time:'~2 часа', deadline:'6 октября', nextTitle:'Зарегистрируйся', nextDesc:'Задачи на нейросети.' }
       ],
       "9": [
-        { id:'it-9-a', type:'Курс', typeClass:'course', title:'Код будущего (AI / Python)', meta:'9–11 класс · 144 часа<br>Запись открыта', source:'Источник: Госуслуги', url:'https://www.gosuslugi.ru/futurecode', why:'Ты в 9 классе. Курсы дают сертификат с баллами ЕГЭ.', format:'Онлайн/офлайн', time:'144 часа', deadline:'Запись открыта', nextTitle:'Выбери курс «Код будущего»', nextDesc:'Python, AI или робототехника — что ближе.' },
-        { id:'it-9-b', type:'Олимпиада', typeClass:'', title:'НТО (старший трек)', meta:'9–11 класс · ~3 часа<br>До 22 октября', source:'Источник: НТО', url:'https://ntcontest.ru/', why:'НТО даёт 100 баллов ЕГЭ и льготы.', format:'Командный, онлайн', time:'~3 часа', deadline:'22 октября', nextTitle:'Зарегистрируйся на НТО', nextDesc:'Выбери профиль и начни решать задачи.' },
-        { id:'it-9-c', type:'Курс', typeClass:'course', title:'Сириус.Курсы', meta:'7–11 класс · 40+ курсов<br>Доступ сразу', source:'Источник: Сириус', url:'https://sochisirius.ru/', why:'Бесплатные курсы по программированию и AI.', format:'Онлайн', time:'Разная', deadline:'Без дедлайна', nextTitle:'Выбери курс на Сириус', nextDesc:'Пройди первый модуль.' }
+        { id:'it-9-1', topic:'it', level:1, type:'Курс', typeClass:'course', title:'Сириус.Курсы', meta:'7–11 класс · 40+ курсов · Доступ сразу', source:'Источник: Сириус', url:'https://sochisirius.ru/', why:'Ты в 9 классе. Курсы — хороший старт.', format:'Онлайн', time:'Разная', deadline:'Без дедлайна', nextTitle:'Выбери курс на Сириус', nextDesc:'Пройди первый модуль.' },
+        { id:'it-9-2', topic:'it', level:2, type:'Курс', typeClass:'course', title:'Код будущего (AI)', meta:'9–11 класс · 144 часа · Запись открыта', source:'Источник: Госуслуги', url:'https://www.gosuslugi.ru/futurecode', why:'Углубись — выбери курс по AI.', format:'Онлайн/офлайн', time:'144 часа', deadline:'Запись открыта', nextTitle:'Выбери AI-курс', nextDesc:'Python или AI.' },
+        { id:'it-9-3', topic:'it', level:3, type:'Олимпиада', typeClass:'', title:'НТО (старший трек)', meta:'9–11 класс · ~3 часа · до 22 октября', source:'Источник: НТО', url:'https://ntcontest.ru/', why:'НТО даёт 100 баллов ЕГЭ. Покажи результат.', format:'Командный, онлайн', time:'~3 часа', deadline:'22 октября', nextTitle:'Зарегистрируйся на НТО', nextDesc:'Выбери профиль.' }
       ],
       "10": [
-        { id:'it-10-a', type:'Курс', typeClass:'course', title:'Код будущего (профессиональный уровень)', meta:'10–11 класс · 144 часа<br>Запись открыта', source:'Источник: Госуслуги', url:'https://www.gosuslugi.ru/futurecode', why:'Ты в 10 классе. Можно выбрать продвинутый уровень.', format:'Онлайн/офлайн', time:'144 часа', deadline:'Запись открыта', nextTitle:'Подай заявку на продвинутый курс', nextDesc:'Это займёт 10 минут. Выбери AI или разработку.' },
-        { id:'it-10-b', type:'Олимпиада', typeClass:'', title:'НТО (профильный уровень)', meta:'10–11 класс · ~3 часа<br>До 22 октября', source:'Источник: НТО', url:'https://ntcontest.ru/', why:'НТО даёт 100 баллов ЕГЭ. Ты можешь выбрать профиль по AI или разработке.', format:'Командный, онлайн', time:'~3 часа', deadline:'22 октября', nextTitle:'Выбери профиль НТО', nextDesc:'«Анализ данных», «ИИ», «Разработка игр» — выбирай.' },
-        { id:'it-10-c', type:'Олимпиада', typeClass:'', title:'Innopolis Open', meta:'7–11 класс · ~2 часа<br>До 20 октября', source:'Источник: Innopolis', url:'https://innopolis.university/', why:'Международная олимпиада по информатике и AI.', format:'Онлайн', time:'~2 часа', deadline:'20 октября', nextTitle:'Зарегистрируйся на Innopolis Open', nextDesc:'Выбери информатику или AI.' }
+        { id:'it-10-1', topic:'it', level:1, type:'Курс', typeClass:'course', title:'Сириус.Курсы (программирование)', meta:'7–11 класс · 40+ курсов · Доступ сразу', source:'Источник: Сириус', url:'https://sochisirius.ru/', why:'Ты в 10 классе. Начни с курса.', format:'Онлайн', time:'Разная', deadline:'Без дедлайна', nextTitle:'Выбери курс на Сириус', nextDesc:'Пройди первый модуль.' },
+        { id:'it-10-2', topic:'it', level:2, type:'Курс', typeClass:'course', title:'Код будущего (профессиональный)', meta:'10–11 класс · 144 часа · Запись открыта', source:'Источник: Госуслуги', url:'https://www.gosuslugi.ru/futurecode', why:'Углубись — продвинутый уровень.', format:'Онлайн/офлайн', time:'144 часа', deadline:'Запись открыта', nextTitle:'Подай заявку', nextDesc:'Выбери AI или разработку.' },
+        { id:'it-10-3', topic:'it', level:3, type:'Олимпиада', typeClass:'', title:'НТО (профильный)', meta:'10–11 класс · ~3 часа · до 22 октября', source:'Источник: НТО', url:'https://ntcontest.ru/', why:'Покажи результат — НТО даёт 100 баллов ЕГЭ.', format:'Командный, онлайн', time:'~3 часа', deadline:'22 октября', nextTitle:'Выбери профиль НТО', nextDesc:'Анализ данных, ИИ, разработка игр.' }
       ],
       "11": [
-        { id:'it-11-a', type:'Олимпиада', typeClass:'', title:'НТО (профильный уровень)', meta:'11 класс · ~3 часа<br>До 22 октября', source:'Источник: НТО', url:'https://ntcontest.ru/', why:'Тебе нужны льготы при поступлении. НТО даёт 100 баллов ЕГЭ.', format:'Командный, онлайн', time:'~3 часа', deadline:'22 октября', nextTitle:'Зарегистрируйся на НТО', nextDesc:'Выбери профиль, связанный с твоим направлением.' },
-        { id:'it-11-b', type:'Курс', typeClass:'course', title:'Код будущего (олимпиадный уровень)', meta:'11 класс · 144 часа<br>Запись открыта', source:'Источник: Госуслуги', url:'https://www.gosuslugi.ru/futurecode', why:'Подготовка к олимпиадам и ЕГЭ. Сертификат даёт баллы.', format:'Онлайн/офлайн', time:'144 часа', deadline:'Запись открыта', nextTitle:'Выбери олимпиадный курс', nextDesc:'Подготовься к НТО или другим олимпиадам.' },
-        { id:'it-11-c', type:'Олимпиада', typeClass:'', title:'Innopolis Open', meta:'11 класс · ~2 часа<br>До 20 октября', source:'Источник: Innopolis', url:'https://innopolis.university/', why:'Международная олимпиада с профилем AI.', format:'Онлайн', time:'~2 часа', deadline:'20 октября', nextTitle:'Зарегистрируйся на Innopolis Open', nextDesc:'Выбери AI или информатику.' }
+        { id:'it-11-1', topic:'it', level:1, type:'Курс', typeClass:'course', title:'Код будущего (подготовка)', meta:'11 класс · 144 часа · Запись открыта', source:'Источник: Госуслуги', url:'https://www.gosuslugi.ru/futurecode', why:'Ты в 11 классе. Начни с курса для подготовки.', format:'Онлайн/офлайн', time:'144 часа', deadline:'Запись открыта', nextTitle:'Выбери курс', nextDesc:'Для подготовки к ЕГЭ.' },
+        { id:'it-11-2', topic:'it', level:2, type:'Олимпиада', typeClass:'', title:'Innopolis Open', meta:'11 класс · ~2 часа · до 20 октября', source:'Источник: Innopolis', url:'https://innopolis.university/', why:'Углубись — международная олимпиада.', format:'Онлайн', time:'~2 часа', deadline:'20 октября', nextTitle:'Зарегистрируйся на Innopolis Open', nextDesc:'Информатика или AI.' },
+        { id:'it-11-3', topic:'it', level:3, type:'Олимпиада', typeClass:'', title:'НТО (профильный)', meta:'11 класс · ~3 часа · до 22 октября', source:'Источник: НТО', url:'https://ntcontest.ru/', why:'Максимальный результат — 100 баллов ЕГЭ.', format:'Командный, онлайн', time:'~3 часа', deadline:'22 октября', nextTitle:'Зарегистрируйся на НТО', nextDesc:'Выбери профиль.' }
       ]
     },
     design: {
       "1-4": [
-        { id:'d-1-4-a', type:'Олимпиада', typeClass:'', title:'Олимпиада «Клеверенок»', meta:'1–4 класс · ~1 час<br>85+ олимпиад', source:'Источник: Клевердети', url:'https://клевердети.рф', why:'Ты в младших классах. Много интересных заданий.', format:'Онлайн', time:'~1 час', deadline:'Без дедлайна', nextTitle:'Попробуй олимпиаду «Клеверенок»', nextDesc:'Выбери предмет: математика, русский, окружающий мир.' },
-        { id:'d-1-4-b', type:'Курс', typeClass:'course', title:'Графический дизайн для младших школьников', meta:'8+ лет · 9 уроков<br>Доступ сразу', source:'Источник: Stepik', url:'https://stepik.org/course/263579', why:'Ты можешь попробовать дизайн с простых видеоуроков.', format:'Онлайн-курс', time:'~2 часа', deadline:'Без дедлайна', nextTitle:'Открой курс и посмотри первый урок', nextDesc:'Просто начни — видео короткие.' },
-        { id:'d-1-4-c', type:'Конкурс', typeClass:'contest', title:'Конкурс «Мои первые открытия»', meta:'1–4 класс · ~1 час<br>Октябрь–ноябрь', source:'Источник: Инженерная школа №777', url:'https://liczejatyakshevayugorsk-r86.gosweb.gosuslugi.ru/', why:'Ты можешь показать свой проект.', format:'Проект', time:'~1 час', deadline:'Ноябрь', nextTitle:'Придумай проект', nextDesc:'Например, рисунок или поделку. Опиши её.' }
+        { id:'d-1-4-1', topic:'design', level:1, type:'Курс', typeClass:'course', title:'Графический дизайн для младших', meta:'8+ лет · 9 уроков · Доступ сразу', source:'Источник: Stepik', url:'https://stepik.org/course/263579', why:'Ты в младших классах. Начни с простого.', format:'Онлайн-курс', time:'~2 часа', deadline:'Без дедлайна', nextTitle:'Посмотри первый урок', nextDesc:'Видео короткие.' },
+        { id:'d-1-4-2', topic:'design', level:2, type:'Олимпиада', typeClass:'', title:'Олимпиада «Клеверенок»', meta:'1–4 класс · ~1 час', source:'Источник: Клевердети', url:'https://клевердети.рф', why:'Углубись — попробуй задания.', format:'Онлайн', time:'~1 час', deadline:'Без дедлайна', nextTitle:'Выбери олимпиаду', nextDesc:'Чтение, рисование.' },
+        { id:'d-1-4-3', topic:'design', level:3, type:'Конкурс', typeClass:'contest', title:'Конкурс «Мои первые открытия»', meta:'1–4 класс · ~1 час · Ноябрь', source:'Источник: Инженерная школа №777', url:'https://liczejatyakshevayugorsk-r86.gosweb.gosuslugi.ru/', why:'Покажи результат — оформи проект.', format:'Проект', time:'~1 час', deadline:'Ноябрь', nextTitle:'Придумай проект', nextDesc:'Рисунок или поделку.' }
       ],
       "5-6": [
-        { id:'d-5-6-a', type:'Конкурс', typeClass:'contest', title:'ЮниорМастерс.Креатив', meta:'10–17 лет · ~2 часа<br>До 15 сентября', source:'Источник: ЮниорМастерс', url:'http://юниормастерс-креатив.рф/', why:'Ты можешь попробовать анимацию, керамику, кино.', format:'Онлайн, дистанционно', time:'~2 часа', deadline:'15 сентября', nextTitle:'Выбери направление чемпионата', nextDesc:'Анимация, керамика, мобильное кино — что ближе.' },
-        { id:'d-5-6-b', type:'Курс', typeClass:'course', title:'Основы графического дизайна', meta:'12–17 лет · 33 урока<br>Доступ сразу', source:'Источник: Stepik', url:'https://stepik.org/course/252183', why:'Ты можешь изучить графические редакторы.', format:'Онлайн-курс', time:'~5 часов', deadline:'Без дедлайна', nextTitle:'Пройди первый модуль курса', nextDesc:'Изучи основы работы в Photoshop и Illustrator.' },
-        { id:'d-5-6-c', type:'Олимпиада', typeClass:'', title:'Олимпиада «Альтаир. Звездный вызов»', meta:'5–11 класс · ~1,5 часа<br>4–12 октября', source:'Источник: Альтаир', url:'https://altairdonso.ru/', why:'Ты можешь проверить знания в космонавтике.', format:'Онлайн', time:'~1,5 часа', deadline:'12 октября', nextTitle:'Пройди олимпиаду', nextDesc:'Если любишь космос — попробуй.' }
+        { id:'d-5-6-1', topic:'design', level:1, type:'Курс', typeClass:'course', title:'Основы графического дизайна', meta:'12–17 лет · 33 урока · Доступ сразу', source:'Источник: Stepik', url:'https://stepik.org/course/252183', why:'Ты в 5–6 классе. Изучи редакторы.', format:'Онлайн-курс', time:'~5 часов', deadline:'Без дедлайна', nextTitle:'Первый модуль', nextDesc:'Photoshop и Illustrator.' },
+        { id:'d-5-6-2', topic:'design', level:2, type:'Конкурс', typeClass:'contest', title:'ЮниорМастерс.Креатив', meta:'10–17 лет · ~2 часа · до 15 сентября', source:'Источник: ЮниорМастерс', url:'http://юниормастерс-креатив.рф/', why:'Углубись — попробуй анимацию или кино.', format:'Онлайн', time:'~2 часа', deadline:'15 сентября', nextTitle:'Выбери направление', nextDesc:'Анимация, керамика, кино.' },
+        { id:'d-5-6-3', topic:'design', level:3, type:'Олимпиада', typeClass:'', title:'Олимпиада «Альтаир. Звездный вызов»', meta:'5–11 класс · ~1,5 часа · 4–12 октября', source:'Источник: Альтаир', url:'https://altairdonso.ru/', why:'Покажи результат — олимпиада.', format:'Онлайн', time:'~1,5 часа', deadline:'12 октября', nextTitle:'Пройди олимпиаду', nextDesc:'Космос и дизайн.' }
       ],
       "7": [
-        { id:'d-7-a', type:'Конкурс', typeClass:'contest', title:'ЮниорМастерс.Креатив', meta:'10–17 лет · ~2 часа<br>До 15 сентября', source:'Источник: ЮниорМастерс', url:'http://юниормастерс-креатив.рф/', why:'Ты можешь попробовать дизайн и медиа.', format:'Онлайн', time:'~2 часа', deadline:'15 сентября', nextTitle:'Выбери направление', nextDesc:'Анимация или мобильное кино.' },
-        { id:'d-7-b', type:'Курс', typeClass:'course', title:'Основы графического дизайна', meta:'12–17 лет · 33 урока<br>Доступ сразу', source:'Источник: Stepik', url:'https://stepik.org/course/252183', why:'Ты можешь изучить графические редакторы.', format:'Онлайн-курс', time:'~5 часов', deadline:'Без дедлайна', nextTitle:'Пройди первый модуль', nextDesc:'Изучи Photoshop и Illustrator.' },
-        { id:'d-7-c', type:'Олимпиада', typeClass:'', title:'Олимпиада «Высшая проба» по дизайну', meta:'9–11 класс · ~3 часа<br>До 13 ноября', source:'Источник: НИУ ВШЭ', url:'https://olymp.hse.ru/', why:'Пока не подходит по классу, но можно посмотреть задания для подготовки.', format:'Онлайн + очно', time:'~3 часа', deadline:'13 ноября', nextTitle:'Посмотри задания прошлых лет', nextDesc:'Подготовься к участию в 9 классе.' }
+        { id:'d-7-1', topic:'design', level:1, type:'Курс', typeClass:'course', title:'Основы графического дизайна', meta:'12–17 лет · 33 урока', source:'Источник: Stepik', url:'https://stepik.org/course/252183', why:'Ты в 7 классе. Начни с курса.', format:'Онлайн-курс', time:'~5 часов', deadline:'Без дедлайна', nextTitle:'Первый модуль', nextDesc:'Photoshop.' },
+        { id:'d-7-2', topic:'design', level:2, type:'Конкурс', typeClass:'contest', title:'ЮниорМастерс.Креатив', meta:'10–17 лет · ~2 часа · до 15 сентября', source:'Источник: ЮниорМастерс', url:'http://юниормастерс-креатив.рф/', why:'Углубись — попробуй анимацию.', format:'Онлайн', time:'~2 часа', deadline:'15 сентября', nextTitle:'Выбери направление', nextDesc:'Анимация или кино.' },
+        { id:'d-7-3', topic:'design', level:3, type:'Олимпиада', typeClass:'', title:'Олимпиада «Высшая проба» по дизайну', meta:'9–11 класс · ~3 часа · до 13 ноября', source:'Источник: НИУ ВШЭ', url:'https://olymp.hse.ru/', why:'Посмотри задания для подготовки к 9 классу.', format:'Онлайн + очно', time:'~3 часа', deadline:'13 ноября', nextTitle:'Изучи демоверсии', nextDesc:'Подготовься заранее.' }
       ],
       "8": [
-        { id:'d-8-a', type:'Конкурс', typeClass:'contest', title:'ЮниорМастерс.Креатив', meta:'10–17 лет · ~2 часа<br>До 15 сентября', source:'Источник: ЮниорМастерс', url:'http://юниормастерс-креатив.рф/', why:'Ты можешь попробовать дизайн.', format:'Онлайн', time:'~2 часа', deadline:'15 сентября', nextTitle:'Выбери направление', nextDesc:'Анимация или дизайн.' },
-        { id:'d-8-b', type:'Курс', typeClass:'course', title:'Основы графического дизайна', meta:'12–17 лет · 33 урока<br>Доступ сразу', source:'Источник: Stepik', url:'https://stepik.org/course/252183', why:'Ты можешь изучить редакторы.', format:'Онлайн-курс', time:'~5 часов', deadline:'Без дедлайна', nextTitle:'Пройди первый модуль', nextDesc:'Изучи Photoshop и Illustrator.' },
-        { id:'d-8-c', type:'Олимпиада', typeClass:'', title:'Олимпиада «Высшая проба» по дизайну', meta:'9–11 класс · ~3 часа<br>До 13 ноября', source:'Источник: НИУ ВШЭ', url:'https://olymp.hse.ru/', why:'Пока не подходит по классу. Подготовься к 9 классу.', format:'Онлайн', time:'~3 часа', deadline:'13 ноября', nextTitle:'Посмотри задания', nextDesc:'Изучи демоверсии.' }
+        { id:'d-8-1', topic:'design', level:1, type:'Курс', typeClass:'course', title:'Основы графического дизайна', meta:'12–17 лет · 33 урока', source:'Источник: Stepik', url:'https://stepik.org/course/252183', why:'Начни с курса.', format:'Онлайн-курс', time:'~5 часов', deadline:'Без дедлайна', nextTitle:'Первый модуль', nextDesc:'Photoshop.' },
+        { id:'d-8-2', topic:'design', level:2, type:'Конкурс', typeClass:'contest', title:'ЮниорМастерс.Креатив', meta:'10–17 лет · ~2 часа · до 15 сентября', source:'Источник: ЮниорМастерс', url:'http://юниормастерс-креатив.рф/', why:'Углубись.', format:'Онлайн', time:'~2 часа', deadline:'15 сентября', nextTitle:'Выбери направление', nextDesc:'Анимация.' },
+        { id:'d-8-3', topic:'design', level:3, type:'Олимпиада', typeClass:'', title:'Олимпиада «Высшая проба»', meta:'9–11 класс · ~3 часа · до 13 ноября', source:'Источник: НИУ ВШЭ', url:'https://olymp.hse.ru/', why:'Подготовься к 9 классу.', format:'Онлайн', time:'~3 часа', deadline:'13 ноября', nextTitle:'Посмотри задания', nextDesc:'Демоверсии.' }
       ],
       "9": [
-        { id:'d-9-a', type:'Олимпиада', typeClass:'', title:'Олимпиада «Высшая проба» по дизайну', meta:'9–11 класс · ~3 часа<br>До 13 ноября', source:'Источник: НИУ ВШЭ', url:'https://olymp.hse.ru/', why:'Ты в 9 классе. Олимпиада даёт льготы при поступлении.', format:'Онлайн + очно', time:'~3 часа', deadline:'13 ноября', nextTitle:'Зарегистрируйся на «Высшую пробу»', nextDesc:'Выполни проект и загрузи работу.' },
-        { id:'d-9-b', type:'Конкурс', typeClass:'contest', title:'ЮниорМастерс.Креатив', meta:'10–17 лет · ~2 часа<br>До 15 сентября', source:'Источник: ЮниорМастерс', url:'http://юниормастерс-креатив.рф/', why:'Ты можешь попробовать дизайн и медиа.', format:'Онлайн', time:'~2 часа', deadline:'15 сентября', nextTitle:'Выбери направление', nextDesc:'Анимация или дизайн.' },
-        { id:'d-9-c', type:'Курс', typeClass:'course', title:'Основы графического дизайна', meta:'12–17 лет · 33 урока<br>Доступ сразу', source:'Источник: Stepik', url:'https://stepik.org/course/252183', why:'Ты можешь изучить редакторы.', format:'Онлайн', time:'~5 часов', deadline:'Без дедлайна', nextTitle:'Пройди первый модуль', nextDesc:'Изучи Photoshop.' }
+        { id:'d-9-1', topic:'design', level:1, type:'Курс', typeClass:'course', title:'Основы графического дизайна', meta:'12–17 лет · 33 урока', source:'Источник: Stepik', url:'https://stepik.org/course/252183', why:'Начни с курса.', format:'Онлайн', time:'~5 часов', deadline:'Без дедлайна', nextTitle:'Первый модуль', nextDesc:'Photoshop.' },
+        { id:'d-9-2', topic:'design', level:2, type:'Конкурс', typeClass:'contest', title:'ЮниорМастерс.Креатив', meta:'10–17 лет · ~2 часа · до 15 сентября', source:'Источник: ЮниорМастерс', url:'http://юниормастерс-креатив.рф/', why:'Углубись.', format:'Онлайн', time:'~2 часа', deadline:'15 сентября', nextTitle:'Выбери направление', nextDesc:'Анимация.' },
+        { id:'d-9-3', topic:'design', level:3, type:'Олимпиада', typeClass:'', title:'Олимпиада «Высшая проба»', meta:'9–11 класс · ~3 часа · до 13 ноября', source:'Источник: НИУ ВШЭ', url:'https://olymp.hse.ru/', why:'Олимпиада даёт льготы.', format:'Онлайн + очно', time:'~3 часа', deadline:'13 ноября', nextTitle:'Зарегистрируйся', nextDesc:'Выполни проект.' }
       ],
       "10": [
-        { id:'d-10-a', type:'Олимпиада', typeClass:'', title:'Олимпиада «Высшая проба» по дизайну', meta:'10 класс · ~3 часа<br>До 13 ноября', source:'Источник: НИУ ВШЭ', url:'https://olymp.hse.ru/', why:'Ты в 10 классе. Олимпиада даёт льготы.', format:'Онлайн + очно', time:'~3 часа', deadline:'13 ноября', nextTitle:'Зарегистрируйся на «Высшую пробу»', nextDesc:'Выполни проект.' },
-        { id:'d-10-b', type:'Конкурс', typeClass:'contest', title:'ЮниорМастерс.Креатив', meta:'10–17 лет · ~2 часа<br>До 15 сентября', source:'Источник: ЮниорМастерс', url:'http://юниормастерс-креатив.рф/', why:'Ты можешь попробовать дизайн.', format:'Онлайн', time:'~2 часа', deadline:'15 сентября', nextTitle:'Выбери направление', nextDesc:'Анимация или дизайн.' },
-        { id:'d-10-c', type:'Курс', typeClass:'course', title:'Основы графического дизайна', meta:'12–17 лет · 33 урока<br>Доступ сразу', source:'Источник: Stepik', url:'https://stepik.org/course/252183', why:'Ты можешь изучить редакторы.', format:'Онлайн', time:'~5 часов', deadline:'Без дедлайна', nextTitle:'Пройди первый модуль', nextDesc:'Изучи Photoshop и Illustrator.' }
+        { id:'d-10-1', topic:'design', level:1, type:'Курс', typeClass:'course', title:'Основы графического дизайна', meta:'12–17 лет · 33 урока', source:'Источник: Stepik', url:'https://stepik.org/course/252183', why:'Начни с курса.', format:'Онлайн', time:'~5 часов', deadline:'Без дедлайна', nextTitle:'Первый модуль', nextDesc:'Photoshop.' },
+        { id:'d-10-2', topic:'design', level:2, type:'Конкурс', typeClass:'contest', title:'ЮниорМастерс.Креатив', meta:'10–17 лет · ~2 часа · до 15 сентября', source:'Источник: ЮниорМастерс', url:'http://юниормастерс-креатив.рф/', why:'Углубись.', format:'Онлайн', time:'~2 часа', deadline:'15 сентября', nextTitle:'Выбери направление', nextDesc:'Анимация.' },
+        { id:'d-10-3', topic:'design', level:3, type:'Олимпиада', typeClass:'', title:'Олимпиада «Высшая проба»', meta:'10 класс · ~3 часа · до 13 ноября', source:'Источник: НИУ ВШЭ', url:'https://olymp.hse.ru/', why:'Олимпиада даёт льготы.', format:'Онлайн + очно', time:'~3 часа', deadline:'13 ноября', nextTitle:'Зарегистрируйся', nextDesc:'Выполни проект.' }
       ],
       "11": [
-        { id:'d-11-a', type:'Олимпиада', typeClass:'', title:'Олимпиада «Высшая проба» по дизайну', meta:'11 класс · ~3 часа<br>До 13 ноября', source:'Источник: НИУ ВШЭ', url:'https://olymp.hse.ru/', why:'Ты в 11 классе. Олимпиада даёт льготы при поступлении.', format:'Онлайн + очно', time:'~3 часа', deadline:'13 ноября', nextTitle:'Зарегистрируйся на «Высшую пробу»', nextDesc:'Выполни проект и загрузи работу.' },
-        { id:'d-11-b', type:'Конкурс', typeClass:'contest', title:'ЮниорМастерс.Креатив', meta:'10–17 лет · ~2 часа<br>До 15 сентября', source:'Источник: ЮниорМастерс', url:'http://юниормастерс-креатив.рф/', why:'Ты можешь попробовать дизайн.', format:'Онлайн', time:'~2 часа', deadline:'15 сентября', nextTitle:'Выбери направление', nextDesc:'Анимация или дизайн.' },
-        { id:'d-11-c', type:'Курс', typeClass:'course', title:'Основы графического дизайна', meta:'12–17 лет · 33 урока<br>Доступ сразу', source:'Источник: Stepik', url:'https://stepik.org/course/252183', why:'Ты можешь изучить редакторы.', format:'Онлайн', time:'~5 часов', deadline:'Без дедлайна', nextTitle:'Пройди первый модуль', nextDesc:'Изучи Photoshop и Illustrator.' }
+        { id:'d-11-1', topic:'design', level:1, type:'Курс', typeClass:'course', title:'Основы графического дизайна', meta:'12–17 лет · 33 урока', source:'Источник: Stepik', url:'https://stepik.org/course/252183', why:'Начни с курса.', format:'Онлайн', time:'~5 часов', deadline:'Без дедлайна', nextTitle:'Первый модуль', nextDesc:'Photoshop.' },
+        { id:'d-11-2', topic:'design', level:2, type:'Конкурс', typeClass:'contest', title:'ЮниорМастерс.Креатив', meta:'10–17 лет · ~2 часа · до 15 сентября', source:'Источник: ЮниорМастерс', url:'http://юниормастерс-креатив.рф/', why:'Углубись.', format:'Онлайн', time:'~2 часа', deadline:'15 сентября', nextTitle:'Выбери направление', nextDesc:'Анимация.' },
+        { id:'d-11-3', topic:'design', level:3, type:'Олимпиада', typeClass:'', title:'Олимпиада «Высшая проба»', meta:'11 класс · ~3 часа · до 13 ноября', source:'Источник: НИУ ВШЭ', url:'https://olymp.hse.ru/', why:'Олимпиада даёт льготы при поступлении.', format:'Онлайн + очно', time:'~3 часа', deadline:'13 ноября', nextTitle:'Зарегистрируйся', nextDesc:'Выполни проект.' }
       ]
     },
     science: {
       "1-4": [
-        { id:'s-1-4-a', type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час<br>До 29 июня', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Ты в младших классах. Интересные задания про безопасность.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Это займёт около часа. Получишь сертификат.' },
-        { id:'s-1-4-b', type:'Олимпиада', typeClass:'', title:'Олимпиада «Клеверенок»', meta:'1–4 класс · ~1 час<br>85+ олимпиад', source:'Источник: Клевердети', url:'https://клевердети.рф', why:'Ты можешь попробовать задания по математике и окружающему миру.', format:'Онлайн', time:'~1 час', deadline:'Без дедлайна', nextTitle:'Выбери предмет', nextDesc:'Математика, окружающий мир — что ближе.' },
-        { id:'s-1-4-c', type:'Конкурс', typeClass:'contest', title:'Конкурс «Мои первые открытия»', meta:'1–4 класс · ~1 час<br>Октябрь–ноябрь', source:'Источник: Инженерная школа №777', url:'https://liczejatyakshevayugorsk-r86.gosweb.gosuslugi.ru/', why:'Ты можешь показать свой проект.', format:'Проект', time:'~1 час', deadline:'Ноябрь', nextTitle:'Придумай проект', nextDesc:'Например, про природу или космос.' }
+        { id:'s-1-4-1', topic:'science', level:1, type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час · до 29 июня', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Начни с простой олимпиады.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Сертификат.' },
+        { id:'s-1-4-2', topic:'science', level:2, type:'Олимпиада', typeClass:'', title:'Олимпиада «Клеверенок»', meta:'1–4 класс · ~1 час', source:'Источник: Клевердети', url:'https://клевердети.рф', why:'Углубись.', format:'Онлайн', time:'~1 час', deadline:'Без дедлайна', nextTitle:'Выбери предмет', nextDesc:'Математика, окружающий мир.' },
+        { id:'s-1-4-3', topic:'science', level:3, type:'Конкурс', typeClass:'contest', title:'Конкурс «Мои первые открытия»', meta:'1–4 класс · ~1 час · Ноябрь', source:'Источник: Инженерная школа №777', url:'https://liczejatyakshevayugorsk-r86.gosweb.gosuslugi.ru/', why:'Покажи результат — проект.', format:'Проект', time:'~1 час', deadline:'Ноябрь', nextTitle:'Придумай проект', nextDesc:'О природе или космосе.' }
       ],
       "5-6": [
-        { id:'s-5-6-a', type:'Олимпиада', typeClass:'', title:'Олимпиада «Альтаир. Звездный вызов»', meta:'5–11 класс · ~1,5 часа<br>4–12 октября', source:'Источник: Альтаир', url:'https://altairdonso.ru/', why:'Ты можешь проверить знания в космонавтике.', format:'Онлайн', time:'~1,5 часа', deadline:'12 октября', nextTitle:'Пройди олимпиаду', nextDesc:'Если любишь космос — попробуй.' },
-        { id:'s-5-6-b', type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час<br>До 29 июня', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Ты можешь проверить знания по безопасности.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Получишь сертификат.' },
-        { id:'s-5-6-c', type:'Курс', typeClass:'course', title:'Сириус.Курсы (наука)', meta:'7–11 класс · 40+ курсов<br>Доступ сразу', source:'Источник: Сириус', url:'https://sochisirius.ru/', why:'Ты можешь начать изучать науку глубже.', format:'Онлайн', time:'Разная', deadline:'Без дедлайна', nextTitle:'Выбери курс на Сириус', nextDesc:'Физика, химия, биология — что ближе.' }
+        { id:'s-5-6-1', topic:'science', level:1, type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Начни с простого.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Сертификат.' },
+        { id:'s-5-6-2', topic:'science', level:2, type:'Олимпиада', typeClass:'', title:'Олимпиада «Альтаир. Звездный вызов»', meta:'5–11 класс · ~1,5 часа · 4–12 октября', source:'Источник: Альтаир', url:'https://altairdonso.ru/', why:'Углубись — космонавтика.', format:'Онлайн', time:'~1,5 часа', deadline:'12 октября', nextTitle:'Пройди олимпиаду', nextDesc:'Космос.' },
+        { id:'s-5-6-3', topic:'science', level:3, type:'Курс', typeClass:'course', title:'Сириус.Курсы (наука)', meta:'7–11 класс · 40+ курсов', source:'Источник: Сириус', url:'https://sochisirius.ru/', why:'Покажи результат — глубокий курс.', format:'Онлайн', time:'Разная', deadline:'Без дедлайна', nextTitle:'Выбери курс', nextDesc:'Физика, химия, биология.' }
       ],
       "7": [
-        { id:'s-7-a', type:'Олимпиада', typeClass:'', title:'Олимпиада «Альтаир. Звездный вызов»', meta:'5–11 класс · ~1,5 часа<br>4–12 октября', source:'Источник: Альтаир', url:'https://altairdonso.ru/', why:'Ты можешь проверить знания в космонавтике.', format:'Онлайн', time:'~1,5 часа', deadline:'12 октября', nextTitle:'Пройди олимпиаду', nextDesc:'Интересно, если любишь космос.' },
-        { id:'s-7-b', type:'Курс', typeClass:'course', title:'Сириус.Курсы (физика, химия)', meta:'7–11 класс · 40+ курсов<br>Доступ сразу', source:'Источник: Сириус', url:'https://sochisirius.ru/', why:'Ты можешь изучать науку глубже.', format:'Онлайн', time:'Разная', deadline:'Без дедлайна', nextTitle:'Выбери курс на Сириус', nextDesc:'Физика или химия — что ближе.' },
-        { id:'s-7-c', type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час<br>До 29 июня', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Ты можешь проверить знания.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Получишь сертификат.' }
+        { id:'s-7-1', topic:'science', level:1, type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Начни с простого.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Сертификат.' },
+        { id:'s-7-2', topic:'science', level:2, type:'Олимпиада', typeClass:'', title:'Олимпиада «Альтаир. Звездный вызов»', meta:'5–11 класс · ~1,5 часа', source:'Источник: Альтаир', url:'https://altairdonso.ru/', why:'Углубись — космос.', format:'Онлайн', time:'~1,5 часа', deadline:'12 октября', nextTitle:'Пройди олимпиаду', nextDesc:'Космос.' },
+        { id:'s-7-3', topic:'science', level:3, type:'Курс', typeClass:'course', title:'Сириус.Курсы (физика, химия)', meta:'7–11 класс · 40+ курсов', source:'Источник: Сириус', url:'https://sochisirius.ru/', why:'Покажи результат.', format:'Онлайн', time:'Разная', deadline:'Без дедлайна', nextTitle:'Выбери курс', nextDesc:'Физика или химия.' }
       ],
       "8": [
-        { id:'s-8-a', type:'Курс', typeClass:'course', title:'Сириус.Курсы (физика, химия)', meta:'8–11 класс · 40+ курсов<br>Доступ сразу', source:'Источник: Сириус', url:'https://sochisirius.ru/', why:'Ты в 8 классе. Можно изучать науку углублённо.', format:'Онлайн', time:'Разная', deadline:'Без дедлайна', nextTitle:'Выбери курс на Сириус', nextDesc:'Физика, химия, биология — что ближе.' },
-        { id:'s-8-b', type:'Олимпиада', typeClass:'', title:'Олимпиада «Альтаир. Звездный вызов»', meta:'5–11 класс · ~1,5 часа<br>4–12 октября', source:'Источник: Альтаир', url:'https://altairdonso.ru/', why:'Ты можешь проверить знания в космонавтике.', format:'Онлайн', time:'~1,5 часа', deadline:'12 октября', nextTitle:'Пройди олимпиаду', nextDesc:'Интересно, если любишь космос.' },
-        { id:'s-8-c', type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час<br>До 29 июня', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Ты можешь проверить знания.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Получишь сертификат.' }
+        { id:'s-8-1', topic:'science', level:1, type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Начни с простого.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Сертификат.' },
+        { id:'s-8-2', topic:'science', level:2, type:'Олимпиада', typeClass:'', title:'Олимпиада «Альтаир. Звездный вызов»', meta:'5–11 класс · ~1,5 часа', source:'Источник: Альтаир', url:'https://altairdonso.ru/', why:'Углубись.', format:'Онлайн', time:'~1,5 часа', deadline:'12 октября', nextTitle:'Пройди олимпиаду', nextDesc:'Космос.' },
+        { id:'s-8-3', topic:'science', level:3, type:'Курс', typeClass:'course', title:'Сириус.Курсы', meta:'8–11 класс · 40+ курсов', source:'Источник: Сириус', url:'https://sochisirius.ru/', why:'Покажи результат.', format:'Онлайн', time:'Разная', deadline:'Без дедлайна', nextTitle:'Выбери курс', nextDesc:'Физика, химия.' }
       ],
       "9": [
-        { id:'s-9-a', type:'Курс', typeClass:'course', title:'Сириус.Курсы (физика, химия)', meta:'9–11 класс · 40+ курсов<br>Доступ сразу', source:'Источник: Сириус', url:'https://sochisirius.ru/', why:'Ты в 9 классе. Курсы дают глубокие знания.', format:'Онлайн', time:'Разная', deadline:'Без дедлайна', nextTitle:'Выбери курс на Сириус', nextDesc:'Физика, химия или биология.' },
-        { id:'s-9-b', type:'Олимпиада', typeClass:'', title:'Олимпиада «Альтаир. Звездный вызов»', meta:'5–11 класс · ~1,5 часа<br>4–12 октября', source:'Источник: Альтаир', url:'https://altairdonso.ru/', why:'Ты можешь проверить знания в космонавтике.', format:'Онлайн', time:'~1,5 часа', deadline:'12 октября', nextTitle:'Пройди олимпиаду', nextDesc:'Интересно, если любишь космос.' },
-        { id:'s-9-c', type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час<br>До 29 июня', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Ты можешь проверить знания.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Получишь сертификат.' }
+        { id:'s-9-1', topic:'science', level:1, type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Начни с простого.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Сертификат.' },
+        { id:'s-9-2', topic:'science', level:2, type:'Олимпиада', typeClass:'', title:'Олимпиада «Альтаир. Звездный вызов»', meta:'5–11 класс · ~1,5 часа', source:'Источник: Альтаир', url:'https://altairdonso.ru/', why:'Углубись.', format:'Онлайн', time:'~1,5 часа', deadline:'12 октября', nextTitle:'Пройди олимпиаду', nextDesc:'Космос.' },
+        { id:'s-9-3', topic:'science', level:3, type:'Курс', typeClass:'course', title:'Сириус.Курсы', meta:'9–11 класс · 40+ курсов', source:'Источник: Сириус', url:'https://sochisirius.ru/', why:'Покажи результат.', format:'Онлайн', time:'Разная', deadline:'Без дедлайна', nextTitle:'Выбери курс', nextDesc:'Физика, химия.' }
       ],
       "10": [
-        { id:'s-10-a', type:'Курс', typeClass:'course', title:'Сириус.Курсы (физика, химия)', meta:'10–11 класс · 40+ курсов<br>Доступ сразу', source:'Источник: Сириус', url:'https://sochisirius.ru/', why:'Ты в 10 классе. Курсы дают глубокие знания.', format:'Онлайн', time:'Разная', deadline:'Без дедлайна', nextTitle:'Выбери курс на Сириус', nextDesc:'Физика, химия или биология.' },
-        { id:'s-10-b', type:'Олимпиада', typeClass:'', title:'Олимпиада «Альтаир. Звездный вызов»', meta:'5–11 класс · ~1,5 часа<br>4–12 октября', source:'Источник: Альтаир', url:'https://altairdonso.ru/', why:'Ты можешь проверить знания в космонавтике.', format:'Онлайн', time:'~1,5 часа', deadline:'12 октября', nextTitle:'Пройди олимпиаду', nextDesc:'Интересно, если любишь космос.' },
-        { id:'s-10-c', type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час<br>До 29 июня', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Ты можешь проверить знания.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Получишь сертификат.' }
+        { id:'s-10-1', topic:'science', level:1, type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Начни с простого.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Сертификат.' },
+        { id:'s-10-2', topic:'science', level:2, type:'Олимпиада', typeClass:'', title:'Олимпиада «Альтаир. Звездный вызов»', meta:'5–11 класс · ~1,5 часа', source:'Источник: Альтаир', url:'https://altairdonso.ru/', why:'Углубись.', format:'Онлайн', time:'~1,5 часа', deadline:'12 октября', nextTitle:'Пройди олимпиаду', nextDesc:'Космос.' },
+        { id:'s-10-3', topic:'science', level:3, type:'Курс', typeClass:'course', title:'Сириус.Курсы', meta:'10–11 класс · 40+ курсов', source:'Источник: Сириус', url:'https://sochisirius.ru/', why:'Покажи результат.', format:'Онлайн', time:'Разная', deadline:'Без дедлайна', nextTitle:'Выбери курс', nextDesc:'Физика, химия.' }
       ],
       "11": [
-        { id:'s-11-a', type:'Курс', typeClass:'course', title:'Сириус.Курсы (физика, химия)', meta:'11 класс · 40+ курсов<br>Доступ сразу', source:'Источник: Сириус', url:'https://sochisirius.ru/', why:'Ты в 11 классе. Курсы помогут с подготовкой.', format:'Онлайн', time:'Разная', deadline:'Без дедлайна', nextTitle:'Выбери курс на Сириус', nextDesc:'Физика, химия или биология.' },
-        { id:'s-11-b', type:'Олимпиада', typeClass:'', title:'Олимпиада «Альтаир. Звездный вызов»', meta:'5–11 класс · ~1,5 часа<br>4–12 октября', source:'Источник: Альтаир', url:'https://altairdonso.ru/', why:'Ты можешь проверить знания в космонавтике.', format:'Онлайн', time:'~1,5 часа', deadline:'12 октября', nextTitle:'Пройди олимпиаду', nextDesc:'Интересно, если любишь космос.' },
-        { id:'s-11-c', type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час<br>До 29 июня', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Ты можешь проверить знания.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Получишь сертификат.' }
+        { id:'s-11-1', topic:'science', level:1, type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Начни с простого.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Сертификат.' },
+        { id:'s-11-2', topic:'science', level:2, type:'Олимпиада', typeClass:'', title:'Олимпиада «Альтаир. Звездный вызов»', meta:'5–11 класс · ~1,5 часа', source:'Источник: Альтаир', url:'https://altairdonso.ru/', why:'Углубись.', format:'Онлайн', time:'~1,5 часа', deadline:'12 октября', nextTitle:'Пройди олимпиаду', nextDesc:'Космос.' },
+        { id:'s-11-3', topic:'science', level:3, type:'Курс', typeClass:'course', title:'Сириус.Курсы', meta:'11 класс · 40+ курсов', source:'Источник: Сириус', url:'https://sochisirius.ru/', why:'Покажи результат.', format:'Онлайн', time:'Разная', deadline:'Без дедлайна', nextTitle:'Выбери курс', nextDesc:'Физика, химия.' }
       ]
     },
     business: {
       "1-4": [
-        { id:'b-1-4-a', type:'Олимпиада', typeClass:'', title:'Олимпиада по финансовой грамотности', meta:'1–11 класс · ~1 час<br>Март–апрель', source:'Источник: Учи.ру / Банк России', url:'https://www.cbr.ru/', why:'Ты в младших классах. Можно узнать про деньги в игровой форме.', format:'Онлайн', time:'~1 час', deadline:'Апрель', nextTitle:'Пройди олимпиаду по финграмотности', nextDesc:'Это займёт около часа. Получишь сертификат.' },
-        { id:'b-1-4-b', type:'Олимпиада', typeClass:'', title:'Олимпиада «Клеверенок»', meta:'1–4 класс · ~1 час<br>85+ олимпиад', source:'Источник: Клевердети', url:'https://клевердети.рф', why:'Ты можешь попробовать разные задания.', format:'Онлайн', time:'~1 час', deadline:'Без дедлайна', nextTitle:'Выбери олимпиаду', nextDesc:'Математика или окружающий мир.' },
-        { id:'b-1-4-c', type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час<br>До 29 июня', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Ты можешь проверить знания по безопасности.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Получишь сертификат.' }
+        { id:'b-1-4-1', topic:'business', level:1, type:'Олимпиада', typeClass:'', title:'Олимпиада по финансовой грамотности', meta:'1–11 класс · ~1 час · Март–апрель', source:'Источник: Учи.ру / Банк России', url:'https://www.cbr.ru/', why:'Начни с простого — узнай про деньги.', format:'Онлайн', time:'~1 час', deadline:'Апрель', nextTitle:'Пройди олимпиаду', nextDesc:'Сертификат.' },
+        { id:'b-1-4-2', topic:'business', level:2, type:'Олимпиада', typeClass:'', title:'Олимпиада «Клеверенок»', meta:'1–4 класс · ~1 час', source:'Источник: Клевердети', url:'https://клевердети.рф', why:'Углубись.', format:'Онлайн', time:'~1 час', deadline:'Без дедлайна', nextTitle:'Выбери олимпиаду', nextDesc:'Математика.' },
+        { id:'b-1-4-3', topic:'business', level:3, type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Покажи результат.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Сертификат.' }
       ],
       "5-6": [
-        { id:'b-5-6-a', type:'Олимпиада', typeClass:'', title:'Олимпиада по финансовой грамотности', meta:'1–11 класс · ~1 час<br>Март–апрель', source:'Источник: Учи.ру / Банк России', url:'https://www.cbr.ru/', why:'Ты можешь узнать про деньги и бизнес.', format:'Онлайн', time:'~1 час', deadline:'Апрель', nextTitle:'Пройди олимпиаду', nextDesc:'Это займёт около часа.' },
-        { id:'b-5-6-b', type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час<br>До 29 июня', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Ты можешь проверить знания.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Получишь сертификат.' },
-        { id:'b-5-6-c', type:'Курс', typeClass:'course', title:'Основы предпринимательства', meta:'Любой класс · 40 минут<br>Доступ сразу', source:'Источник: Stepik', url:'https://stepik.org/course/38218', why:'Ты можешь узнать, что такое бизнес.', format:'Онлайн-курс', time:'~40 минут', deadline:'Без дедлайна', nextTitle:'Пройди первый раздел', nextDesc:'Просто начни — объясняют простыми словами.' }
+        { id:'b-5-6-1', topic:'business', level:1, type:'Курс', typeClass:'course', title:'Основы предпринимательства', meta:'Любой класс · 40 минут · Доступ сразу', source:'Источник: Stepik', url:'https://stepik.org/course/38218', why:'Ты в 5–6 классе. Начни с курса.', format:'Онлайн-курс', time:'~40 минут', deadline:'Без дедлайна', nextTitle:'Первый раздел', nextDesc:'Простые объяснения.' },
+        { id:'b-5-6-2', topic:'business', level:2, type:'Олимпиада', typeClass:'', title:'Олимпиада по финансовой грамотности', meta:'1–11 класс · ~1 час', source:'Источник: Учи.ру / Банк России', url:'https://www.cbr.ru/', why:'Углубись.', format:'Онлайн', time:'~1 час', deadline:'Апрель', nextTitle:'Пройди олимпиаду', nextDesc:'Сертификат.' },
+        { id:'b-5-6-3', topic:'business', level:3, type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Покажи результат.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Сертификат.' }
       ],
       "7": [
-        { id:'b-7-a', type:'Олимпиада', typeClass:'', title:'Олимпиада по финансовой грамотности', meta:'1–11 класс · ~1 час<br>Март–апрель', source:'Источник: Учи.ру / Банк России', url:'https://www.cbr.ru/', why:'Ты можешь узнать про деньги и бизнес.', format:'Онлайн', time:'~1 час', deadline:'Апрель', nextTitle:'Пройди олимпиаду', nextDesc:'Это займёт около часа.' },
-        { id:'b-7-b', type:'Курс', typeClass:'course', title:'Основы предпринимательства', meta:'Любой класс · 40 минут<br>Доступ сразу', source:'Источник: Stepik', url:'https://stepik.org/course/38218', why:'Ты можешь узнать, что такое бизнес.', format:'Онлайн-курс', time:'~40 минут', deadline:'Без дедлайна', nextTitle:'Пройди первый раздел', nextDesc:'Просто начни.' },
-        { id:'b-7-c', type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час<br>До 29 июня', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Ты можешь проверить знания.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Получишь сертификат.' }
+        { id:'b-7-1', topic:'business', level:1, type:'Курс', typeClass:'course', title:'Основы предпринимательства', meta:'Любой класс · 40 минут', source:'Источник: Stepik', url:'https://stepik.org/course/38218', why:'Начни с курса.', format:'Онлайн-курс', time:'~40 минут', deadline:'Без дедлайна', nextTitle:'Первый раздел', nextDesc:'Простые объяснения.' },
+        { id:'b-7-2', topic:'business', level:2, type:'Олимпиада', typeClass:'', title:'Олимпиада по финансовой грамотности', meta:'1–11 класс · ~1 час', source:'Источник: Учи.ру / Банк России', url:'https://www.cbr.ru/', why:'Углубись.', format:'Онлайн', time:'~1 час', deadline:'Апрель', nextTitle:'Пройди олимпиаду', nextDesc:'Сертификат.' },
+        { id:'b-7-3', topic:'business', level:3, type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Покажи результат.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Сертификат.' }
       ],
       "8": [
-        { id:'b-8-a', type:'Олимпиада', typeClass:'', title:'Олимпиада «Ломоносов» по предпринимательству', meta:'8–11 класс · ~3 часа<br>До 29 ноября', source:'Источник: МГУ', url:'https://olymp.msu.ru/', why:'Ты в 8 классе. Можно попробовать бизнес-задачи.', format:'Онлайн + очно', time:'~3 часа', deadline:'29 ноября', nextTitle:'Зарегистрируйся на «Ломоносов»', nextDesc:'Выполни задания по математике и экономике.' },
-        { id:'b-8-b', type:'Олимпиада', typeClass:'', title:'Олимпиада по финансовой грамотности', meta:'1–11 класс · ~1 час<br>Март–апрель', source:'Источник: Учи.ру / Банк России', url:'https://www.cbr.ru/', why:'Ты можешь проверить знания.', format:'Онлайн', time:'~1 час', deadline:'Апрель', nextTitle:'Пройди олимпиаду', nextDesc:'Это займёт около часа.' },
-        { id:'b-8-c', type:'Курс', typeClass:'course', title:'Основы предпринимательства', meta:'Любой класс · 40 минут<br>Доступ сразу', source:'Источник: Stepik', url:'https://stepik.org/course/38218', why:'Ты можешь узнать базовые понятия.', format:'Онлайн-курс', time:'~40 минут', deadline:'Без дедлайна', nextTitle:'Пройди первый раздел', nextDesc:'Просто начни.' }
+        { id:'b-8-1', topic:'business', level:1, type:'Курс', typeClass:'course', title:'Основы предпринимательства', meta:'Любой класс · 40 минут', source:'Источник: Stepik', url:'https://stepik.org/course/38218', why:'Начни с курса.', format:'Онлайн-курс', time:'~40 минут', deadline:'Без дедлайна', nextTitle:'Первый раздел', nextDesc:'Простые объяснения.' },
+        { id:'b-8-2', topic:'business', level:2, type:'Олимпиада', typeClass:'', title:'Олимпиада по финансовой грамотности', meta:'1–11 класс · ~1 час', source:'Источник: Учи.ру / Банк России', url:'https://www.cbr.ru/', why:'Углубись.', format:'Онлайн', time:'~1 час', deadline:'Апрель', nextTitle:'Пройди олимпиаду', nextDesc:'Сертификат.' },
+        { id:'b-8-3', topic:'business', level:3, type:'Олимпиада', typeClass:'', title:'Олимпиада «Ломоносов» по предпринимательству', meta:'8–11 класс · ~3 часа · до 29 ноября', source:'Источник: МГУ', url:'https://olymp.msu.ru/', why:'Покажи результат.', format:'Онлайн + очно', time:'~3 часа', deadline:'29 ноября', nextTitle:'Зарегистрируйся', nextDesc:'Бизнес-задачи.' }
       ],
       "9": [
-        { id:'b-9-a', type:'Олимпиада', typeClass:'', title:'Олимпиада «Ломоносов» по предпринимательству', meta:'9 класс · ~3 часа<br>До 29 ноября', source:'Источник: МГУ', url:'https://olymp.msu.ru/', why:'Ты в 9 классе. Можно попробовать бизнес-задачи.', format:'Онлайн + очно', time:'~3 часа', deadline:'29 ноября', nextTitle:'Зарегистрируйся на «Ломоносов»', nextDesc:'Выполни задания.' },
-        { id:'b-9-b', type:'Олимпиада', typeClass:'', title:'Олимпиада по финансовой грамотности', meta:'1–11 класс · ~1 час<br>Март–апрель', source:'Источник: Учи.ру / Банк России', url:'https://www.cbr.ru/', why:'Ты можешь проверить знания.', format:'Онлайн', time:'~1 час', deadline:'Апрель', nextTitle:'Пройди олимпиаду', nextDesc:'Это займёт около часа.' },
-        { id:'b-9-c', type:'Курс', typeClass:'course', title:'Основы предпринимательства', meta:'Любой класс · 40 минут<br>Доступ сразу', source:'Источник: Stepik', url:'https://stepik.org/course/38218', why:'Ты можешь узнать базовые понятия.', format:'Онлайн-курс', time:'~40 минут', deadline:'Без дедлайна', nextTitle:'Пройди первый раздел', nextDesc:'Просто начни.' }
+        { id:'b-9-1', topic:'business', level:1, type:'Курс', typeClass:'course', title:'Основы предпринимательства', meta:'Любой класс · 40 минут', source:'Источник: Stepik', url:'https://stepik.org/course/38218', why:'Начни с курса.', format:'Онлайн-курс', time:'~40 минут', deadline:'Без дедлайна', nextTitle:'Первый раздел', nextDesc:'Простые объяснения.' },
+        { id:'b-9-2', topic:'business', level:2, type:'Олимпиада', typeClass:'', title:'Олимпиада по финансовой грамотности', meta:'1–11 класс · ~1 час', source:'Источник: Учи.ру / Банк России', url:'https://www.cbr.ru/', why:'Углубись.', format:'Онлайн', time:'~1 час', deadline:'Апрель', nextTitle:'Пройди олимпиаду', nextDesc:'Сертификат.' },
+        { id:'b-9-3', topic:'business', level:3, type:'Олимпиада', typeClass:'', title:'Олимпиада «Ломоносов» по предпринимательству', meta:'9 класс · ~3 часа · до 29 ноября', source:'Источник: МГУ', url:'https://olymp.msu.ru/', why:'Покажи результат.', format:'Онлайн + очно', time:'~3 часа', deadline:'29 ноября', nextTitle:'Зарегистрируйся', nextDesc:'Бизнес-задачи.' }
       ],
       "10": [
-        { id:'b-10-a', type:'Олимпиада', typeClass:'', title:'Олимпиада «Ломоносов» по предпринимательству', meta:'10 класс · ~3 часа<br>До 29 ноября', source:'Источник: МГУ', url:'https://olymp.msu.ru/', why:'Ты в 10 классе. Олимпиада даёт льготы.', format:'Онлайн + очно', time:'~3 часа', deadline:'29 ноября', nextTitle:'Зарегистрируйся на «Ломоносов»', nextDesc:'Выполни задания по экономике и бизнесу.' },
-        { id:'b-10-b', type:'Олимпиада', typeClass:'', title:'Олимпиада по финансовой грамотности', meta:'1–11 класс · ~1 час<br>Март–апрель', source:'Источник: Учи.ру / Банк России', url:'https://www.cbr.ru/', why:'Ты можешь проверить знания.', format:'Онлайн', time:'~1 час', deadline:'Апрель', nextTitle:'Пройди олимпиаду', nextDesc:'Это займёт около часа.' },
-        { id:'b-10-c', type:'Курс', typeClass:'course', title:'Основы предпринимательства', meta:'Любой класс · 40 минут<br>Доступ сразу', source:'Источник: Stepik', url:'https://stepik.org/course/38218', why:'Ты можешь узнать базовые понятия.', format:'Онлайн-курс', time:'~40 минут', deadline:'Без дедлайна', nextTitle:'Пройди первый раздел', nextDesc:'Просто начни.' }
+        { id:'b-10-1', topic:'business', level:1, type:'Курс', typeClass:'course', title:'Основы предпринимательства', meta:'Любой класс · 40 минут', source:'Источник: Stepik', url:'https://stepik.org/course/38218', why:'Начни с курса.', format:'Онлайн-курс', time:'~40 минут', deadline:'Без дедлайна', nextTitle:'Первый раздел', nextDesc:'Простые объяснения.' },
+        { id:'b-10-2', topic:'business', level:2, type:'Олимпиада', typeClass:'', title:'Олимпиада по финансовой грамотности', meta:'1–11 класс · ~1 час', source:'Источник: Учи.ру / Банк России', url:'https://www.cbr.ru/', why:'Углубись.', format:'Онлайн', time:'~1 час', deadline:'Апрель', nextTitle:'Пройди олимпиаду', nextDesc:'Сертификат.' },
+        { id:'b-10-3', topic:'business', level:3, type:'Олимпиада', typeClass:'', title:'Олимпиада «Ломоносов» по предпринимательству', meta:'10 класс · ~3 часа · до 29 ноября', source:'Источник: МГУ', url:'https://olymp.msu.ru/', why:'Покажи результат.', format:'Онлайн + очно', time:'~3 часа', deadline:'29 ноября', nextTitle:'Зарегистрируйся', nextDesc:'Бизнес-задачи.' }
       ],
       "11": [
-        { id:'b-11-a', type:'Олимпиада', typeClass:'', title:'Олимпиада «Ломоносов» по предпринимательству', meta:'11 класс · ~3 часа<br>До 29 ноября', source:'Источник: МГУ', url:'https://olymp.msu.ru/', why:'Ты в 11 классе. Олимпиада даёт льготы при поступлении.', format:'Онлайн + очно', time:'~3 часа', deadline:'29 ноября', nextTitle:'Зарегистрируйся на «Ломоносов»', nextDesc:'Выполни задания.' },
-        { id:'b-11-b', type:'Олимпиада', typeClass:'', title:'Олимпиада по финансовой грамотности', meta:'1–11 класс · ~1 час<br>Март–апрель', source:'Источник: Учи.ру / Банк России', url:'https://www.cbr.ru/', why:'Ты можешь проверить знания.', format:'Онлайн', time:'~1 час', deadline:'Апрель', nextTitle:'Пройди олимпиаду', nextDesc:'Это займёт около часа.' },
-        { id:'b-11-c', type:'Курс', typeClass:'course', title:'Основы предпринимательства', meta:'Любой класс · 40 минут<br>Доступ сразу', source:'Источник: Stepik', url:'https://stepik.org/course/38218', why:'Ты можешь узнать базовые понятия.', format:'Онлайн-курс', time:'~40 минут', deadline:'Без дедлайна', nextTitle:'Пройди первый раздел', nextDesc:'Просто начни.' }
+        { id:'b-11-1', topic:'business', level:1, type:'Курс', typeClass:'course', title:'Основы предпринимательства', meta:'Любой класс · 40 минут', source:'Источник: Stepik', url:'https://stepik.org/course/38218', why:'Начни с курса.', format:'Онлайн-курс', time:'~40 минут', deadline:'Без дедлайна', nextTitle:'Первый раздел', nextDesc:'Простые объяснения.' },
+        { id:'b-11-2', topic:'business', level:2, type:'Олимпиада', typeClass:'', title:'Олимпиада по финансовой грамотности', meta:'1–11 класс · ~1 час', source:'Источник: Учи.ру / Банк России', url:'https://www.cbr.ru/', why:'Углубись.', format:'Онлайн', time:'~1 час', deadline:'Апрель', nextTitle:'Пройди олимпиаду', nextDesc:'Сертификат.' },
+        { id:'b-11-3', topic:'business', level:3, type:'Олимпиада', typeClass:'', title:'Олимпиада «Ломоносов» по предпринимательству', meta:'11 класс · ~3 часа · до 29 ноября', source:'Источник: МГУ', url:'https://olymp.msu.ru/', why:'Покажи результат.', format:'Онлайн + очно', time:'~3 часа', deadline:'29 ноября', nextTitle:'Зарегистрируйся', nextDesc:'Бизнес-задачи.' }
       ]
     },
     media: {
       "1-4": [
-        { id:'m-1-4-a', type:'Олимпиада', typeClass:'', title:'Олимпиада «Клеверенок»', meta:'1–4 класс · ~1 час<br>85+ олимпиад', source:'Источник: Клевердети', url:'https://клевердети.рф', why:'Ты в младших классах. Можно попробовать задания по чтению и языку.', format:'Онлайн', time:'~1 час', deadline:'Без дедлайна', nextTitle:'Выбери олимпиаду', nextDesc:'Литературное чтение или русский язык.' },
-        { id:'m-1-4-b', type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час<br>До 29 июня', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Ты можешь проверить знания.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Получишь сертификат.' },
-        { id:'m-1-4-c', type:'Конкурс', typeClass:'contest', title:'Конкурс «Мои первые открытия»', meta:'1–4 класс · ~1 час<br>Октябрь–ноябрь', source:'Источник: Инженерная школа №777', url:'https://liczejatyakshevayugorsk-r86.gosweb.gosuslugi.ru/', why:'Ты можешь показать свой проект.', format:'Проект', time:'~1 час', deadline:'Ноябрь', nextTitle:'Придумай проект', nextDesc:'Например, рассказ или рисунок.' }
+        { id:'m-1-4-1', topic:'media', level:1, type:'Олимпиада', typeClass:'', title:'Олимпиада «Клеверенок»', meta:'1–4 класс · ~1 час', source:'Источник: Клевердети', url:'https://клевердети.рф', why:'Начни с простого.', format:'Онлайн', time:'~1 час', deadline:'Без дедлайна', nextTitle:'Выбери олимпиаду', nextDesc:'Чтение.' },
+        { id:'m-1-4-2', topic:'media', level:2, type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Углубись.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Сертификат.' },
+        { id:'m-1-4-3', topic:'media', level:3, type:'Конкурс', typeClass:'contest', title:'Конкурс «Мои первые открытия»', meta:'1–4 класс · ~1 час · Ноябрь', source:'Источник: Инженерная школа №777', url:'https://liczejatyakshevayugorsk-r86.gosweb.gosuslugi.ru/', why:'Покажи результат.', format:'Проект', time:'~1 час', deadline:'Ноябрь', nextTitle:'Придумай проект', nextDesc:'Рассказ или рисунок.' }
       ],
       "5-6": [
-        { id:'m-5-6-a', type:'Конкурс', typeClass:'contest', title:'ЮниорМастерс.Креатив', meta:'10–17 лет · ~2 часа<br>До 15 сентября', source:'Источник: ЮниорМастерс', url:'http://юниормастерс-креатив.рф/', why:'Ты можешь попробовать мобильное кино или анимацию.', format:'Онлайн', time:'~2 часа', deadline:'15 сентября', nextTitle:'Выбери направление', nextDesc:'Анимация или мобильное кино.' },
-        { id:'m-5-6-b', type:'Олимпиада', typeClass:'', title:'Олимпиада «Альтаир. Звездный вызов»', meta:'5–11 класс · ~1,5 часа<br>4–12 октября', source:'Источник: Альтаир', url:'https://altairdonso.ru/', why:'Ты можешь проверить знания в космонавтике.', format:'Онлайн', time:'~1,5 часа', deadline:'12 октября', nextTitle:'Пройди олимпиаду', nextDesc:'Интересно, если любишь космос.' },
-        { id:'m-5-6-c', type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час<br>До 29 июня', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Ты можешь проверить знания.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Получишь сертификат.' }
+        { id:'m-5-6-1', topic:'media', level:1, type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Начни с простого.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Сертификат.' },
+        { id:'m-5-6-2', topic:'media', level:2, type:'Олимпиада', typeClass:'', title:'Олимпиада «Альтаир. Звездный вызов»', meta:'5–11 класс · ~1,5 часа', source:'Источник: Альтаир', url:'https://altairdonso.ru/', why:'Углубись.', format:'Онлайн', time:'~1,5 часа', deadline:'12 октября', nextTitle:'Пройди олимпиаду', nextDesc:'Космос.' },
+        { id:'m-5-6-3', topic:'media', level:3, type:'Конкурс', typeClass:'contest', title:'ЮниорМастерс.Креатив', meta:'10–17 лет · ~2 часа · до 15 сентября', source:'Источник: ЮниорМастерс', url:'http://юниормастерс-креатив.рф/', why:'Покажи результат.', format:'Онлайн', time:'~2 часа', deadline:'15 сентября', nextTitle:'Выбери направление', nextDesc:'Анимация или кино.' }
       ],
       "7": [
-        { id:'m-7-a', type:'Конкурс', typeClass:'contest', title:'ЮниорМастерс.Креатив', meta:'10–17 лет · ~2 часа<br>До 15 сентября', source:'Источник: ЮниорМастерс', url:'http://юниормастерс-креатив.рф/', why:'Ты можешь попробовать мобильное кино или анимацию.', format:'Онлайн', time:'~2 часа', deadline:'15 сентября', nextTitle:'Выбери направление', nextDesc:'Анимация или мобильное кино.' },
-        { id:'m-7-b', type:'Олимпиада', typeClass:'', title:'Олимпиада «Альтаир. Звездный вызов»', meta:'5–11 класс · ~1,5 часа<br>4–12 октября', source:'Источник: Альтаир', url:'https://altairdonso.ru/', why:'Ты можешь проверить знания.', format:'Онлайн', time:'~1,5 часа', deadline:'12 октября', nextTitle:'Пройди олимпиаду', nextDesc:'Интересно, если любишь космос.' },
-        { id:'m-7-c', type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час<br>До 29 июня', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Ты можешь проверить знания.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Получишь сертификат.' }
+        { id:'m-7-1', topic:'media', level:1, type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Начни с простого.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Сертификат.' },
+        { id:'m-7-2', topic:'media', level:2, type:'Олимпиада', typeClass:'', title:'Олимпиада «Альтаир. Звездный вызов»', meta:'5–11 класс · ~1,5 часа', source:'Источник: Альтаир', url:'https://altairdonso.ru/', why:'Углубись.', format:'Онлайн', time:'~1,5 часа', deadline:'12 октября', nextTitle:'Пройди олимпиаду', nextDesc:'Космос.' },
+        { id:'m-7-3', topic:'media', level:3, type:'Конкурс', typeClass:'contest', title:'ЮниорМастерс.Креатив', meta:'10–17 лет · ~2 часа · до 15 сентября', source:'Источник: ЮниорМастерс', url:'http://юниормастерс-креатив.рф/', why:'Покажи результат.', format:'Онлайн', time:'~2 часа', deadline:'15 сентября', nextTitle:'Выбери направление', nextDesc:'Анимация или кино.' }
       ],
       "8": [
-        { id:'m-8-a', type:'Олимпиада', typeClass:'', title:'Олимпиада «Мир медиа»', meta:'8–11 класс · ~2 часа<br>До 15 апреля', source:'Источник: Московский Политех', url:'https://mospolytech.ru/', why:'Ты в 8 классе. Можно попробовать журналистику.', format:'Онлайн', time:'~2 часа', deadline:'15 апреля', nextTitle:'Зарегистрируйся на «Мир медиа»', nextDesc:'Создай видеоролик, подкаст или презентацию.' },
-        { id:'m-8-b', type:'Конкурс', typeClass:'contest', title:'ЮниорМастерс.Креатив', meta:'10–17 лет · ~2 часа<br>До 15 сентября', source:'Источник: ЮниорМастерс', url:'http://юниормастерс-креатив.рф/', why:'Ты можешь попробовать мобильное кино.', format:'Онлайн', time:'~2 часа', deadline:'15 сентября', nextTitle:'Выбери направление', nextDesc:'Мобильное кино или анимация.' },
-        { id:'m-8-c', type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час<br>До 29 июня', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Ты можешь проверить знания.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Получишь сертификат.' }
+        { id:'m-8-1', topic:'media', level:1, type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Начни с простого.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Сертификат.' },
+        { id:'m-8-2', topic:'media', level:2, type:'Конкурс', typeClass:'contest', title:'ЮниорМастерс.Креатив', meta:'10–17 лет · ~2 часа · до 15 сентября', source:'Источник: ЮниорМастерс', url:'http://юниормастерс-креатив.рф/', why:'Углубись.', format:'Онлайн', time:'~2 часа', deadline:'15 сентября', nextTitle:'Выбери направление', nextDesc:'Мобильное кино.' },
+        { id:'m-8-3', topic:'media', level:3, type:'Олимпиада', typeClass:'', title:'Олимпиада «Мир медиа»', meta:'8–11 класс · ~2 часа · до 15 апреля', source:'Источник: Московский Политех', url:'https://mospolytech.ru/', why:'Покажи результат.', format:'Онлайн', time:'~2 часа', deadline:'15 апреля', nextTitle:'Зарегистрируйся', nextDesc:'Видеоролик или подкаст.' }
       ],
       "9": [
-        { id:'m-9-a', type:'Олимпиада', typeClass:'', title:'Олимпиада «Мир медиа»', meta:'9 класс · ~2 часа<br>До 15 апреля', source:'Источник: Московский Политех', url:'https://mospolytech.ru/', why:'Ты в 9 классе. Можно попробовать журналистику.', format:'Онлайн', time:'~2 часа', deadline:'15 апреля', nextTitle:'Зарегистрируйся на «Мир медиа»', nextDesc:'Создай видеоролик, подкаст или презентацию.' },
-        { id:'m-9-b', type:'Конкурс', typeClass:'contest', title:'ЮниорМастерс.Креатив', meta:'10–17 лет · ~2 часа<br>До 15 сентября', source:'Источник: ЮниорМастерс', url:'http://юниормастерс-креатив.рф/', why:'Ты можешь попробовать мобильное кино.', format:'Онлайн', time:'~2 часа', deadline:'15 сентября', nextTitle:'Выбери направление', nextDesc:'Мобильное кино или анимация.' },
-        { id:'m-9-c', type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час<br>До 29 июня', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Ты можешь проверить знания.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Получишь сертификат.' }
+        { id:'m-9-1', topic:'media', level:1, type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Начни с простого.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Сертификат.' },
+        { id:'m-9-2', topic:'media', level:2, type:'Конкурс', typeClass:'contest', title:'ЮниорМастерс.Креатив', meta:'10–17 лет · ~2 часа · до 15 сентября', source:'Источник: ЮниорМастерс', url:'http://юниормастерс-креатив.рф/', why:'Углубись.', format:'Онлайн', time:'~2 часа', deadline:'15 сентября', nextTitle:'Выбери направление', nextDesc:'Мобильное кино.' },
+        { id:'m-9-3', topic:'media', level:3, type:'Олимпиада', typeClass:'', title:'Олимпиада «Мир медиа»', meta:'9 класс · ~2 часа · до 15 апреля', source:'Источник: Московский Политех', url:'https://mospolytech.ru/', why:'Покажи результат.', format:'Онлайн', time:'~2 часа', deadline:'15 апреля', nextTitle:'Зарегистрируйся', nextDesc:'Видеоролик или подкаст.' }
       ],
       "10": [
-        { id:'m-10-a', type:'Олимпиада', typeClass:'', title:'Олимпиада «Мир медиа»', meta:'10 класс · ~2 часа<br>До 15 апреля', source:'Источник: Московский Политех', url:'https://mospolytech.ru/', why:'Ты в 10 классе. Олимпиада даёт баллы.', format:'Онлайн', time:'~2 часа', deadline:'15 апреля', nextTitle:'Зарегистрируйся на «Мир медиа»', nextDesc:'Создай видеоролик, подкаст или презентацию.' },
-        { id:'m-10-b', type:'Конкурс', typeClass:'contest', title:'ЮниорМастерс.Креатив', meta:'10–17 лет · ~2 часа<br>До 15 сентября', source:'Источник: ЮниорМастерс', url:'http://юниормастерс-креатив.рф/', why:'Ты можешь попробовать мобильное кино.', format:'Онлайн', time:'~2 часа', deadline:'15 сентября', nextTitle:'Выбери направление', nextDesc:'Мобильное кино или анимация.' },
-        { id:'m-10-c', type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час<br>До 29 июня', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Ты можешь проверить знания.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Получишь сертификат.' }
+        { id:'m-10-1', topic:'media', level:1, type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Начни с простого.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Сертификат.' },
+        { id:'m-10-2', topic:'media', level:2, type:'Конкурс', typeClass:'contest', title:'ЮниорМастерс.Креатив', meta:'10–17 лет · ~2 часа · до 15 сентября', source:'Источник: ЮниорМастерс', url:'http://юниормастерс-креатив.рф/', why:'Углубись.', format:'Онлайн', time:'~2 часа', deadline:'15 сентября', nextTitle:'Выбери направление', nextDesc:'Мобильное кино.' },
+        { id:'m-10-3', topic:'media', level:3, type:'Олимпиада', typeClass:'', title:'Олимпиада «Мир медиа»', meta:'10 класс · ~2 часа · до 15 апреля', source:'Источник: Московский Политех', url:'https://mospolytech.ru/', why:'Покажи результат.', format:'Онлайн', time:'~2 часа', deadline:'15 апреля', nextTitle:'Зарегистрируйся', nextDesc:'Видеоролик или подкаст.' }
       ],
       "11": [
-        { id:'m-11-a', type:'Олимпиада', typeClass:'', title:'Олимпиада «Мир медиа»', meta:'11 класс · ~2 часа<br>До 15 апреля', source:'Источник: Московский Политех', url:'https://mospolytech.ru/', why:'Ты в 11 классе. Олимпиада даёт баллы при поступлении.', format:'Онлайн', time:'~2 часа', deadline:'15 апреля', nextTitle:'Зарегистрируйся на «Мир медиа»', nextDesc:'Создай видеоролик, подкаст или презентацию.' },
-        { id:'m-11-b', type:'Конкурс', typeClass:'contest', title:'ЮниорМастерс.Креатив', meta:'10–17 лет · ~2 часа<br>До 15 сентября', source:'Источник: ЮниорМастерс', url:'http://юниормастерс-креатив.рф/', why:'Ты можешь попробовать мобильное кино.', format:'Онлайн', time:'~2 часа', deadline:'15 сентября', nextTitle:'Выбери направление', nextDesc:'Мобильное кино или анимация.' },
-        { id:'m-11-c', type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час<br>До 29 июня', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Ты можешь проверить знания.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Получишь сертификат.' }
+        { id:'m-11-1', topic:'media', level:1, type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Начни с простого.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Сертификат.' },
+        { id:'m-11-2', topic:'media', level:2, type:'Конкурс', typeClass:'contest', title:'ЮниорМастерс.Креатив', meta:'10–17 лет · ~2 часа · до 15 сентября', source:'Источник: ЮниорМастерс', url:'http://юниормастерс-креатив.рф/', why:'Углубись.', format:'Онлайн', time:'~2 часа', deadline:'15 сентября', nextTitle:'Выбери направление', nextDesc:'Мобильное кино.' },
+        { id:'m-11-3', topic:'media', level:3, type:'Олимпиада', typeClass:'', title:'Олимпиада «Мир медиа»', meta:'11 класс · ~2 часа · до 15 апреля', source:'Источник: Московский Политех', url:'https://mospolytech.ru/', why:'Покажи результат.', format:'Онлайн', time:'~2 часа', deadline:'15 апреля', nextTitle:'Зарегистрируйся', nextDesc:'Видеоролик или подкаст.' }
       ]
     },
     unknown: {
       "1-4": [
-        { id:'u-1-4-a', type:'Олимпиада', typeClass:'', title:'Олимпиада «Клеверенок»', meta:'1–4 класс · ~1 час<br>85+ олимпиад', source:'Источник: Клевердети', url:'https://клевердети.рф', why:'Ты пока не знаешь, что интересно. Попробуй разные предметы.', format:'Онлайн', time:'~1 час', deadline:'Без дедлайна', nextTitle:'Выбери олимпиаду', nextDesc:'Математика, русский, окружающий мир — что ближе.' },
-        { id:'u-1-4-b', type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час<br>До 29 июня', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Ты можешь попробовать интересные задания.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Получишь сертификат.' },
-        { id:'u-1-4-c', type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасные дороги»', meta:'1–9 класс · ~1 час<br>Сентябрь–октябрь', source:'Источник: Учи.ру', url:'https://uchi.ru/', why:'Ты можешь узнать про безопасность на дорогах.', format:'Онлайн', time:'~1 час', deadline:'Октябрь', nextTitle:'Пройди олимпиаду', nextDesc:'Это займёт около часа.' }
+        { id:'u-1-4-1', topic:'unknown', level:1, type:'Олимпиада', typeClass:'', title:'Олимпиада «Клеверенок»', meta:'1–4 класс · ~1 час', source:'Источник: Клевердети', url:'https://клевердети.рф', why:'Попробуй разные предметы.', format:'Онлайн', time:'~1 час', deadline:'Без дедлайна', nextTitle:'Выбери олимпиаду', nextDesc:'Математика, русский.' },
+        { id:'u-1-4-2', topic:'unknown', level:2, type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасные дороги»', meta:'1–9 класс · ~1 час · Сентябрь–октябрь', source:'Источник: Учи.ру', url:'https://uchi.ru/', why:'Углубись.', format:'Онлайн', time:'~1 час', deadline:'Октябрь', nextTitle:'Пройди олимпиаду', nextDesc:'О безопасности.' },
+        { id:'u-1-4-3', topic:'unknown', level:3, type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Покажи результат.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Сертификат.' }
       ],
       "5-6": [
-        { id:'u-5-6-a', type:'Олимпиада', typeClass:'', title:'НТО Юниоры', meta:'5–7 класс · ~2 часа<br>До 9 ноября', source:'Источник: НТО', url:'https://ntcontest.ru/', why:'Ты можешь попробовать командные инженерные задачи.', format:'Онлайн', time:'~2 часа', deadline:'9 ноября', nextTitle:'Зарегистрируйся на НТО Юниоры', nextDesc:'Выбери сферу: игротех, ИИтех, роботех.' },
-        { id:'u-5-6-b', type:'Олимпиада', typeClass:'', title:'Олимпиада «Альтаир. Звездный вызов»', meta:'5–11 класс · ~1,5 часа<br>4–12 октября', source:'Источник: Альтаир', url:'https://altairdonso.ru/', why:'Ты можешь проверить знания в космонавтике.', format:'Онлайн', time:'~1,5 часа', deadline:'12 октября', nextTitle:'Пройди олимпиаду', nextDesc:'Интересно, если любишь космос.' },
-        { id:'u-5-6-c', type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час<br>До 29 июня', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Ты можешь проверить знания.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Получишь сертификат.' }
+        { id:'u-5-6-1', topic:'unknown', level:1, type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Начни с простого.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Сертификат.' },
+        { id:'u-5-6-2', topic:'unknown', level:2, type:'Олимпиада', typeClass:'', title:'НТО Юниоры', meta:'5–7 класс · ~2 часа · до 9 ноября', source:'Источник: НТО', url:'https://ntcontest.ru/', why:'Углубись.', format:'Онлайн', time:'~2 часа', deadline:'9 ноября', nextTitle:'Зарегистрируйся', nextDesc:'Командные задачи.' },
+        { id:'u-5-6-3', topic:'unknown', level:3, type:'Олимпиада', typeClass:'', title:'Олимпиада «Альтаир. Звездный вызов»', meta:'5–11 класс · ~1,5 часа', source:'Источник: Альтаир', url:'https://altairdonso.ru/', why:'Покажи результат.', format:'Онлайн', time:'~1,5 часа', deadline:'12 октября', nextTitle:'Пройди олимпиаду', nextDesc:'Космос.' }
       ],
       "7": [
-        { id:'u-7-a', type:'Олимпиада', typeClass:'', title:'НТО Юниоры', meta:'5–7 класс · ~2 часа<br>До 9 ноября', source:'Источник: НТО', url:'https://ntcontest.ru/', why:'Ты можешь попробовать командные инженерные задачи.', format:'Онлайн', time:'~2 часа', deadline:'9 ноября', nextTitle:'Зарегистрируйся на НТО Юниоры', nextDesc:'Выбери сферу: игротех, ИИтех, роботех.' },
-        { id:'u-7-b', type:'Олимпиада', typeClass:'', title:'Олимпиада «Альтаир. Звездный вызов»', meta:'5–11 класс · ~1,5 часа<br>4–12 октября', source:'Источник: Альтаир', url:'https://altairdonso.ru/', why:'Ты можешь проверить знания в космонавтике.', format:'Онлайн', time:'~1,5 часа', deadline:'12 октября', nextTitle:'Пройди олимпиаду', nextDesc:'Интересно, если любишь космос.' },
-        { id:'u-7-c', type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час<br>До 29 июня', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Ты можешь проверить знания.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Получишь сертификат.' }
+        { id:'u-7-1', topic:'unknown', level:1, type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Начни с простого.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Сертификат.' },
+        { id:'u-7-2', topic:'unknown', level:2, type:'Олимпиада', typeClass:'', title:'НТО Юниоры', meta:'5–7 класс · ~2 часа · до 9 ноября', source:'Источник: НТО', url:'https://ntcontest.ru/', why:'Углубись.', format:'Онлайн', time:'~2 часа', deadline:'9 ноября', nextTitle:'Зарегистрируйся', nextDesc:'Командные задачи.' },
+        { id:'u-7-3', topic:'unknown', level:3, type:'Олимпиада', typeClass:'', title:'Олимпиада «Альтаир. Звездный вызов»', meta:'5–11 класс · ~1,5 часа', source:'Источник: Альтаир', url:'https://altairdonso.ru/', why:'Покажи результат.', format:'Онлайн', time:'~1,5 часа', deadline:'12 октября', nextTitle:'Пройди олимпиаду', nextDesc:'Космос.' }
       ],
       "8": [
-        { id:'u-8-a', type:'Олимпиада', typeClass:'', title:'НТО (старший трек)', meta:'8–11 класс · ~3 часа<br>До 22 октября', source:'Источник: НТО', url:'https://ntcontest.ru/', why:'Ты можешь попробовать инженерные задачи.', format:'Онлайн', time:'~3 часа', deadline:'22 октября', nextTitle:'Зарегистрируйся на НТО', nextDesc:'Выбери профиль.' },
-        { id:'u-8-b', type:'Олимпиада', typeClass:'', title:'Олимпиада «Альтаир. Звездный вызов»', meta:'5–11 класс · ~1,5 часа<br>4–12 октября', source:'Источник: Альтаир', url:'https://altairdonso.ru/', why:'Ты можешь проверить знания в космонавтике.', format:'Онлайн', time:'~1,5 часа', deadline:'12 октября', nextTitle:'Пройди олимпиаду', nextDesc:'Интересно, если любишь космос.' },
-        { id:'u-8-c', type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час<br>До 29 июня', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Ты можешь проверить знания.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Получишь сертификат.' }
+        { id:'u-8-1', topic:'unknown', level:1, type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Начни с простого.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Сертификат.' },
+        { id:'u-8-2', topic:'unknown', level:2, type:'Олимпиада', typeClass:'', title:'НТО (старший трек)', meta:'8–11 класс · ~3 часа · до 22 октября', source:'Источник: НТО', url:'https://ntcontest.ru/', why:'Углубись.', format:'Онлайн', time:'~3 часа', deadline:'22 октября', nextTitle:'Зарегистрируйся', nextDesc:'Инженерные задачи.' },
+        { id:'u-8-3', topic:'unknown', level:3, type:'Олимпиада', typeClass:'', title:'Олимпиада «Альтаир. Звездный вызов»', meta:'5–11 класс · ~1,5 часа', source:'Источник: Альтаир', url:'https://altairdonso.ru/', why:'Покажи результат.', format:'Онлайн', time:'~1,5 часа', deadline:'12 октября', nextTitle:'Пройди олимпиаду', nextDesc:'Космос.' }
       ],
       "9": [
-        { id:'u-9-a', type:'Олимпиада', typeClass:'', title:'НТО (старший трек)', meta:'9–11 класс · ~3 часа<br>До 22 октября', source:'Источник: НТО', url:'https://ntcontest.ru/', why:'Ты можешь попробовать инженерные задачи.', format:'Онлайн', time:'~3 часа', deadline:'22 октября', nextTitle:'Зарегистрируйся на НТО', nextDesc:'Выбери профиль.' },
-        { id:'u-9-b', type:'Олимпиада', typeClass:'', title:'Олимпиада «Альтаир. Звездный вызов»', meta:'5–11 класс · ~1,5 часа<br>4–12 октября', source:'Источник: Альтаир', url:'https://altairdonso.ru/', why:'Ты можешь проверить знания в космонавтике.', format:'Онлайн', time:'~1,5 часа', deadline:'12 октября', nextTitle:'Пройди олимпиаду', nextDesc:'Интересно, если любишь космос.' },
-        { id:'u-9-c', type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час<br>До 29 июня', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Ты можешь проверить знания.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Получишь сертификат.' }
+        { id:'u-9-1', topic:'unknown', level:1, type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Начни с простого.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Сертификат.' },
+        { id:'u-9-2', topic:'unknown', level:2, type:'Олимпиада', typeClass:'', title:'НТО (старший трек)', meta:'9–11 класс · ~3 часа · до 22 октября', source:'Источник: НТО', url:'https://ntcontest.ru/', why:'Углубись.', format:'Онлайн', time:'~3 часа', deadline:'22 октября', nextTitle:'Зарегистрируйся', nextDesc:'Инженерные задачи.' },
+        { id:'u-9-3', topic:'unknown', level:3, type:'Олимпиада', typeClass:'', title:'Олимпиада «Альтаир. Звездный вызов»', meta:'5–11 класс · ~1,5 часа', source:'Источник: Альтаир', url:'https://altairdonso.ru/', why:'Покажи результат.', format:'Онлайн', time:'~1,5 часа', deadline:'12 октября', nextTitle:'Пройди олимпиаду', nextDesc:'Космос.' }
       ],
       "10": [
-        { id:'u-10-a', type:'Олимпиада', typeClass:'', title:'НТО (старший трек)', meta:'10 класс · ~3 часа<br>До 22 октября', source:'Источник: НТО', url:'https://ntcontest.ru/', why:'Ты можешь попробовать инженерные задачи.', format:'Онлайн', time:'~3 часа', deadline:'22 октября', nextTitle:'Зарегистрируйся на НТО', nextDesc:'Выбери профиль.' },
-        { id:'u-10-b', type:'Олимпиада', typeClass:'', title:'Олимпиада «Альтаир. Звездный вызов»', meta:'5–11 класс · ~1,5 часа<br>4–12 октября', source:'Источник: Альтаир', url:'https://altairdonso.ru/', why:'Ты можешь проверить знания в космонавтике.', format:'Онлайн', time:'~1,5 часа', deadline:'12 октября', nextTitle:'Пройди олимпиаду', nextDesc:'Интересно, если любишь космос.' },
-        { id:'u-10-c', type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час<br>До 29 июня', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Ты можешь проверить знания.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Получишь сертификат.' }
+        { id:'u-10-1', topic:'unknown', level:1, type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Начни с простого.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Сертификат.' },
+        { id:'u-10-2', topic:'unknown', level:2, type:'Олимпиада', typeClass:'', title:'НТО (старший трек)', meta:'10 класс · ~3 часа · до 22 октября', source:'Источник: НТО', url:'https://ntcontest.ru/', why:'Углубись.', format:'Онлайн', time:'~3 часа', deadline:'22 октября', nextTitle:'Зарегистрируйся', nextDesc:'Инженерные задачи.' },
+        { id:'u-10-3', topic:'unknown', level:3, type:'Олимпиада', typeClass:'', title:'Олимпиада «Альтаир. Звездный вызов»', meta:'5–11 класс · ~1,5 часа', source:'Источник: Альтаир', url:'https://altairdonso.ru/', why:'Покажи результат.', format:'Онлайн', time:'~1,5 часа', deadline:'12 октября', nextTitle:'Пройди олимпиаду', nextDesc:'Космос.' }
       ],
       "11": [
-        { id:'u-11-a', type:'Олимпиада', typeClass:'', title:'НТО (старший трек)', meta:'11 класс · ~3 часа<br>До 22 октября', source:'Источник: НТО', url:'https://ntcontest.ru/', why:'Ты можешь попробовать инженерные задачи.', format:'Онлайн', time:'~3 часа', deadline:'22 октября', nextTitle:'Зарегистрируйся на НТО', nextDesc:'Выбери профиль.' },
-        { id:'u-11-b', type:'Олимпиада', typeClass:'', title:'Олимпиада «Альтаир. Звездный вызов»', meta:'5–11 класс · ~1,5 часа<br>4–12 октября', source:'Источник: Альтаир', url:'https://altairdonso.ru/', why:'Ты можешь проверить знания в космонавтике.', format:'Онлайн', time:'~1,5 часа', deadline:'12 октября', nextTitle:'Пройди олимпиаду', nextDesc:'Интересно, если любишь космос.' },
-        { id:'u-11-c', type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час<br>До 29 июня', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Ты можешь проверить знания.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Получишь сертификат.' }
+        { id:'u-11-1', topic:'unknown', level:1, type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Начни с простого.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Сертификат.' },
+        { id:'u-11-2', topic:'unknown', level:2, type:'Олимпиада', typeClass:'', title:'НТО (старший трек)', meta:'11 класс · ~3 часа · до 22 октября', source:'Источник: НТО', url:'https://ntcontest.ru/', why:'Углубись.', format:'Онлайн', time:'~3 часа', deadline:'22 октября', nextTitle:'Зарегистрируйся', nextDesc:'Инженерные задачи.' },
+        { id:'u-11-3', topic:'unknown', level:3, type:'Олимпиада', typeClass:'', title:'Олимпиада «Альтаир. Звездный вызов»', meta:'5–11 класс · ~1,5 часа', source:'Источник: Альтаир', url:'https://altairdonso.ru/', why:'Покажи результат.', format:'Онлайн', time:'~1,5 часа', deadline:'12 октября', nextTitle:'Пройди олимпиаду', nextDesc:'Космос.' }
       ]
     }
   };
@@ -640,7 +641,24 @@
     Object.values(byGrade).forEach(arr => arr.forEach(o => { allOpportunities[o.id] = o; }));
   });
 
-  let currentOppId = null;
+  // ===== СОСЕДНИЕ ТЕМЫ =====
+  const neighborTopic = {
+    it: 'science',
+    science: 'it',
+    design: 'media',
+    media: 'design',
+    business: 'science',
+    unknown: 'it'
+  };
+
+  const topicLabels = {
+    it: '💻 IT',
+    design: '🎨 Дизайн',
+    science: '🔬 Наука',
+    business: '💼 Бизнес',
+    media: '🎤 Медиа',
+    unknown: '🤷 Не знаю'
+  };
 
   function renderMatchCards() {
     const container = document.getElementById('match-cards');
@@ -654,16 +672,20 @@
       return;
     }
     sub.textContent = '3 возможности из разных источников. Начни с любой.';
-    container.innerHTML = available.slice(0, 3).map(o => `
+    container.innerHTML = available.slice(0, 3).map(o => {
+      const levelLabel = o.level === 1 ? 'Попробовать' : o.level === 2 ? 'Углубиться' : 'Показать результат';
+      return `
       <div class="card" onclick="openDetail('${o.id}')">
         <div class="card-head">
           <span class="card-type ${o.typeClass}">${o.type}</span>
+          <span class="card-level l${o.level}">${levelLabel}</span>
         </div>
         <div class="card-title">${o.title}</div>
         <div class="card-meta">${o.meta}</div>
         <div class="card-source">${o.source}</div>
       </div>
-    `).join('');
+    `;
+    }).join('');
   }
 
   function openDetail(id) {
@@ -693,20 +715,59 @@
     btn.addEventListener('click', () => {
       feedbackButtons.forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
+      lastFeedback = btn.dataset.value;
       continueBtn.disabled = false;
       continueBtn.style.opacity = '1';
     });
   });
 
+  // ===== УМНЫЙ СЛЕДУЮЩИЙ ШАГ =====
   function nextRecommendation() {
-    const byGrade = dataByInterest[selectedInterest] || dataByInterest.unknown;
-    const list = byGrade[selectedGrade] || byGrade['10'] || [];
-    const available = list.filter(o => !rejectedIds.includes(o.id));
-    const next = available[0] || list[0];
-    if (next) {
-      openDetail(next.id);
-      goTo('screen-detail');
+    const current = allOpportunities[currentOppId];
+    if (!current) return;
+
+    let targetTopic = current.topic;
+    let targetLevel = current.level;
+
+    if (lastFeedback === 'fire') {
+      // сложнее, та же тема
+      targetLevel = Math.min(current.level + 1, 3);
+    } else if (lastFeedback === 'ok') {
+      // тот же уровень, та же тема
+      targetLevel = current.level;
+    } else if (lastFeedback === 'no') {
+      // проще и соседняя тема
+      targetLevel = Math.max(current.level - 1, 1);
+      targetTopic = neighborTopic[current.topic] || 'unknown';
     }
+
+    // ищем подходящую возможность
+    let found = findOpportunity(targetTopic, targetLevel);
+    if (!found) found = findOpportunity(targetTopic, 1);
+    if (!found) found = findOpportunity(current.topic, 1);
+    if (!found) found = findOpportunity(current.topic, 2);
+
+    if (found) {
+      openDetail(found.id);
+      goTo('screen-detail');
+    } else {
+      // нечего предложить — показать сообщение
+      document.querySelector('#screen-path .content').innerHTML = `
+        <div class="path-direction">🎯 Ты на максимуме</div>
+        <div class="path-sub">В этой теме больше нечего предложить</div>
+        <div class="empty-state">
+          <h3>🔥 Ты прошёл всё!</h3>
+          <p>Попробуй смежную тему — например, «${topicLabels[neighborTopic[current.topic]] || 'IT'}».</p>
+        </div>
+        <button class="btn" onclick="goTo('screen-start')">Вернуться в начало</button>
+      `;
+    }
+  }
+
+  function findOpportunity(topic, level) {
+    const byGrade = dataByInterest[topic] || {};
+    const list = byGrade[selectedGrade] || [];
+    return list.find(o => o.level === level && !rejectedIds.includes(o.id) && o.id !== currentOppId);
   }
 </script>
 </body>
