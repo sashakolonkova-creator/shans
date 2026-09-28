@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Шанс — твой следующий шаг</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #0e0e12;
+    color: #ffffff;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 0 0 40px;
+  }
+  .app {
+    width: 100%;
+    max-width: 480px;
+    min-height: 100vh;
+    background: #0e0e12;
+    position: relative;
+  }
+
+  .screen { display: none; animation: fade 0.3s ease; }
+  .screen.active { display: block; }
+  @keyframes fade {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero {
+    background: linear-gradient(135deg, #ff6a3d 0%, #ff3d77 50%, #8b3dff 100%);
+    padding: 40px 24px 32px;
+    text-align: center;
+    border-radius: 0 0 28px 28px;
+  }
+  .hero .label {
+    font-size: 12px;
+    letter-spacing: 3px;
+    font-weight: 700;
+    opacity: 0.85;
+    margin-bottom: 12px;
+  }
+  .hero h1 {
+    font-size: 26px;
+    font-weight: 800;
+    margin-bottom: 10px;
+    line-height: 1.2;
+  }
+  .hero p {
+    font-size: 14px;
+    opacity: 0.9;
+    line-height: 1.5;
+    max-width: 320px;
+    margin: 0 auto;
+  }
+
+  .content { padding: 24px; }
+
+  .section-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .section-sub {
+    font-size: 13px;
+    color: #8a8a95;
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .chip {
+    background: #1c1c24;
+    border: 2px solid #2a2a35;
+    padding: 12px 18px;
+    border-radius: 14px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: #fff;
+  }
+  .chip:hover { border-color: #3a3a48; }
+  .chip.selected {
+    background: linear-gradient(135deg, #ff6a3d, #ff3d77);
+    border-color: transparent;
+    color: white;
+  }
+
+  .field { margin-bottom: 18px; }
+  .field label {
+    display: block;
+    font-size: 13px;
+    color: #8a8a95;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+  .options {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .option {
+    flex: 1 1 calc(25% - 8px);
+    min-width: 64px;
+    background: #1c1c24;
+    border: 2px solid #2a2a35;
+    padding: 12px 6px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+    color: #fff;
+  }
+  .option:hover { border-color: #3a3a48; }
+  .option.selected {
+    background: linear-gradient(135deg, #ff6a3d, #ff3d77);
+    border-color: transparent;
+    color: white;
+  }
+  .city-input {
+    width: 100%;
+    background: #1c1c24;
+    border: 2px solid #2a2a35;
+    padding: 14px 16px;
+    border-radius: 12px;
+    font-size: 15px;
+    color: #fff;
+    outline: none;
+    transition: border 0.15s;
+  }
+  .city-input:focus { border-color: #ff6a3d; }
+  .city-input::placeholder { color: #5a5a68; }
+
+  .btn {
+    display: block;
+    width: 100%;
+    background: linear-gradient(135deg, #ff6a3d, #ff3d77);
+    color: white;
+    border: none;
+    padding: 16px;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 700;
+    margin-top: 8px;
+    cursor: pointer;
+    transition: transform 0.1s, opacity 0.15s;
+  }
+  .btn:hover { opacity: 0.92; }
+  .btn:active { transform: scale(0.98); }
+  .btn.secondary {
+    background: #1c1c24;
+    color: #fff;
+    border: 2px solid #2a2a35;
+  }
+  .btn.secondary:hover { border-color: #3a3a48; }
+  .btn.ghost {
+    background: transparent;
+    color: #8a8a95;
+    font-weight: 600;
+    border: none;
+  }
+
+  .card {
+    background: #1a1a22;
+    border: 1px solid #262630;
+    border-radius: 18px;
+    padding: 18px;
+    margin-bottom: 14px;
+    cursor: pointer;
+    transition: border 0.15s, transform 0.1s;
+  }
+  .card:hover { border-color: #3a3a48; }
+  .card:active { transform: scale(0.99); }
+  .card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+    gap: 10px;
+  }
+  .card-type {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 8px;
+    background: #262630;
+    color: #ff8a5c;
+  }
+  .card-type.contest { color: #5cc8ff; }
+  .card-type.course { color: #8affb0; }
+  .card-title {
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    line-height: 1.3;
+  }
+  .card-meta {
+    font-size: 13px;
+    color: #8a8a95;
+    line-height: 1.6;
+  }
+  .card-source {
+    font-size: 11px;
+    color: #5a5a68;
+    margin-top: 10px;
+    font-style: italic;
+  }
+
+  .detail-block {
+    background: #1a1a22;
+    border: 1px solid #262630;
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .detail-block h3 {
+    font-size: 13px;
+    color: #8a8a95;
+    margin-bottom: 8px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .detail-block p {
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  .screen-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 24px 0;
+  }
+  .back {
+    background: #1c1c24;
+    border: 1px solid #2a2a35;
+    width: 42px; height: 42px;
+    border-radius: 12px;
+    font-size: 18px;
+    cursor: pointer;
+    color: #fff;
+    flex-shrink: 0;
+    transition: border 0.15s;
+  }
+  .back:hover { border-color: #3a3a48; }
+  .screen-header h1 { font-size: 19px; font-weight: 700; }
+
+  .next-step-card {
+    background: linear-gradient(135deg, #ff6a3d 0%, #ff3d77 100%);
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+  .next-step-card .tag {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    opacity: 0.85;
+    margin-bottom: 12px;
+  }
+  .next-step-card h2 {
+    font-size: 20px;
+    font-weight: 800;
+    margin-bottom: 10px;
+    line-height: 1.3;
+  }
+  .next-step-card p {
+    font-size: 14px;
+    opacity: 0.95;
+    line-height: 1.5;
+  }
+
+  .feedback {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin: 20px 0;
+  }
+  .feedback button {
+    background: #1c1c24;
+    border: 2px solid #2a2a35;
+    padding: 20px 8px;
+    border-radius: 16px;
+    font-size: 26px;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: #fff;
+  }
+  .feedback button:hover { border-color: #3a3a48; }
+  .feedback button.selected {
+    background: linear-gradient(135deg, #ff6a3d, #ff3d77);
+    border-color: transparent;
+  }
+  .feedback button small {
+    display: block;
+    font-size: 11px;
+    color: #b0b0bc;
+    margin-top: 6px;
+    font-weight: 600;
+  }
+  .feedback button.selected small { color: #fff; }
+
+  .path-direction {
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+  .path-sub {
+    font-size: 13px;
+    color: #8a8a95;
+    margin-bottom: 20px;
+  }
+  .progress {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 20px;
+  }
+  .progress span {
+    flex: 1;
+    height: 6px;
+    background: #262630;
+    border-radius: 3px;
+  }
+  .progress span.done {
+    background: linear-gradient(90deg, #ff6a3d, #ff3d77);
+  }
+  .path-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    font-size: 15px;
+    border-bottom: 1px solid #1c1c24;
+  }
+  .path-item:last-child { border-bottom: none; }
+  .path-item .dot {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    flex-shrink: 0;
+    font-weight: 700;
+  }
+  .dot.done {
+    background: linear-gradient(135deg, #ff6a3d, #ff3d77);
+    color: white;
+  }
+  .dot.locked { background: #262630; color: #5a5a68; }
+  .dot.active { background: #3a2418; color: #ff8a5c; }
+
+  .hint {
+    text-align: center;
+    font-size: 12px;
+    color: #5a5a68;
+    margin-top: 16px;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="screen active" id="screen-start">
+    <div class="hero">
+      <div class="label">ШАНС</div>
+      <h1>Привет! Я «Шанс» 👋</h1>
+      <p>Помогу найти не профессию на всю жизнь, а твой следующий шаг</p>
+    </div>
+    <div class="content">
+      <div class="section-title">Что тебе сейчас интересно?</div>
+      <div class="section-sub">Выбери направление — можно и «Не знаю»</div>
+      <div class="chips" id="interest-chips">
+        <div class="chip" data-value="it">💻 IT</div>
+        <div class="chip selected" data-value="design">🎨 Дизайн</div>
+        <div class="chip" data-value="science">🔬 Наука</div>
+        <div class="chip" data-value="business">💼 Бизнес</div>
+        <div class="chip" data-value="media">🎤 Медиа</div>
+        <div class="chip" data-value="unknown">🤷 Не знаю</div>
+      </div>
+      <button class="btn" onclick="goTo('screen-profile')">Продолжить</button>
+      <div class="hint">Это не тест. Просто попробуй.</div>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-profile">
+    <div class="screen-header">
+      <button class="back" onclick="goTo('screen-start')">←</button>
+      <h1>О тебе</h1>
+    </div>
+    <div class="content">
+      <div class="section-title">Пара вопросов</div>
+      <div class="section-sub">Чтобы не показывать всё подряд</div>
+
+      <div class="field">
+        <label>Класс</label>
+        <div class="options" data-group="grade">
+          <div class="option" data-value="1-4">1–4</div>
+          <div class="option" data-value="5-6">5–6</div>
+          <div class="option" data-value="7">7</div>
+          <div class="option" data-value="8">8</div>
+          <div class="option" data-value="9">9</div>
+          <div class="option selected" data-value="10">10</div>
+          <div class="option" data-value="11">11</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Опыт</label>
+        <div class="options" data-group="exp">
+          <div class="option selected" data-value="none">Нет</div>
+          <div class="option" data-value="some">Немного</div>
+          <div class="option" data-value="yes">Есть</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Сколько времени в неделю</label>
+        <div class="options" data-group="time">
+          <div class="option" data-value="1-3">1–3 ч</div>
+          <div class="option selected" data-value="3-5">3–5 ч</div>
+          <div class="option" data-value="5+">5+ ч</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Город</label>
+        <input class="city-input" type="text" placeholder="Например, Казань" value="Казань">
+      </div>
+
+      <button class="btn" onclick="renderMatchCards(); goTo('screen-match')">Показать возможности</button>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-match">
+    <div class="screen-header">
+      <button class="back" onclick="goTo('screen-profile')">←</button>
+      <h1>Мы нашли для тебя</h1>
+    </div>
+    <div class="content">
+      <div class="section-sub">3 возможности из разных источников. Начни с любой.</div>
+      <div id="match-cards"></div>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-detail">
+    <div class="screen-header">
+      <button class="back" onclick="goTo('screen-match')">←</button>
+      <h1 id="detail-title">Курс</h1>
+    </div>
+    <div class="content">
+      <div class="detail-block">
+        <h3>Почему подходит</h3>
+        <p id="detail-why"></p>
+      </div>
+      <div class="detail-block">
+        <h3>Формат</h3>
+        <p id="detail-format"></p>
+      </div>
+      <div class="detail-block">
+        <h3>Время</h3>
+        <p id="detail-time"></p>
+      </div>
+      <div class="detail-block">
+        <h3>Дедлайн</h3>
+        <p id="detail-deadline"></p>
+      </div>
+      <div class="detail-block">
+        <h3>Источник</h3>
+        <p id="detail-source"></p>
+      </div>
+      <button class="btn" onclick="goTo('screen-next')">Попробовать</button>
+      <button class="btn secondary" onclick="goTo('screen-match')">Не подходит</button>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-next">
+    <div class="screen-header">
+      <button class="back" onclick="goTo('screen-detail')">←</button>
+      <h1>Твой следующий шаг</h1>
+    </div>
+    <div class="content">
+      <div class="next-step-card">
+        <div class="tag">Сегодня · 30 минут</div>
+        <h2 id="next-title"></h2>
+        <p id="next-desc"></p>
+      </div>
+      <button class="btn" onclick="goTo('screen-result')">Начать</button>
+      <button class="btn ghost" onclick="goTo('screen-detail')">Назад</button>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-result">
+    <div class="screen-header">
+      <button class="back" onclick="goTo('screen-next')">←</button>
+      <h1>Как прошло?</h1>
+    </div>
+    <div class="content">
+      <div class="section-sub">Это поможет подобрать следующий шаг</div>
+      <div class="feedback" id="feedback-buttons">
+        <button data-value="fire">🔥<small>Очень интересно</small></button>
+        <button data-value="ok">🙂<small>Нормально</small></button>
+        <button data-value="no">😕<small>Не моё</small></button>
+      </div>
+      <button class="btn" id="result-continue" onclick="goTo('screen-path')" disabled style="opacity:0.5;">Продолжить</button>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-path">
+    <div class="screen-header">
+      <button class="back" onclick="goTo('screen-result')">←</button>
+      <h1>Мой путь</h1>
+    </div>
+    <div class="content">
+      <div class="path-direction" id="path-direction">🎨 Дизайн</div>
+      <div class="path-sub">Твой прогресс</div>
+
+      <div class="progress">
+        <span class="done"></span>
+        <span class="done"></span>
+        <span></span>
+      </div>
+
+      <div class="path-item">
+        <div class="dot done">✓</div>
+        Узнал о направлении
+      </div>
+      <div class="path-item">
+        <div class="dot done">✓</div>
+        Попробовал первое задание
+      </div>
+      <div class="path-item">
+        <div class="dot active">🔥</div>
+        Понравилось
+      </div>
+      <div class="path-item">
+        <div class="dot locked">🔒</div>
+        Следующая возможность
+      </div>
+
+      <button class="btn" style="margin-top:20px;" onclick="nextRecommendation()">Посмотреть следующий шаг</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function goTo(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  let selectedInterest = 'design';
+
+  document.querySelectorAll('#interest-chips .chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('#interest-chips .chip').forEach(c => c.classList.remove('selected'));
+      chip.classList.add('selected');
+      selectedInterest = chip.dataset.value;
+    });
+  });
+
+  document.querySelectorAll('.options').forEach(group => {
+    group.querySelectorAll('.option').forEach(opt => {
+      opt.addEventListener('click', () => {
+        group.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+      });
+    });
+  });
+
+  const dataByInterest = {
+    it: [
+      { id:'it-olymp', type:'Олимпиада', typeClass:'', title:'Олимпиада «IT-профи»', meta:'5–11 класс · ~2 часа<br>Дедлайн: 20 октября', source:'Источник: Олимпиада.ру', why:'Ты выбрал IT. Олимпиада рассчитана на новичков — не нужно портфолио.', format:'Онлайн, 2 тура', time:'~2 часа на тур', deadline:'20 октября', nextTitle:'Зарегистрируйся и посмотри пробный тур', nextDesc:'Регистрация — 10 минут. Пробный тур — ещё 20.' },
+      { id:'it-contest', type:'Конкурс', typeClass:'contest', title:'Хакатон «Код-старт»', meta:'7–11 класс · ~8 часов<br>Заявки до 15 ноября', source:'Источник: РСВ', why:'Тебе подходят условия: твой класс, твой регион, новичкам можно.', format:'Командный, онлайн', time:'~8 часов', deadline:'15 ноября', nextTitle:'Собери команду и зарегистрируйся', nextDesc:'Это займёт 30 минут. Найди 2–3 друзей.' },
+      { id:'it-course', type:'Курс', typeClass:'course', title:'Основы Python', meta:'Любой класс · 40 минут<br>Доступ сразу', source:'Источник: Stepik', why:'Ты выбрал IT, у тебя нет опыта. Python — самый простой язык для старта.', format:'Онлайн-курс', time:'Первый раздел — ~40 минут', deadline:'Без дедлайна', nextTitle:'Открой курс и пройди первый раздел', nextDesc:'Это займёт около 40 минут.' }
+    ],
+    design: [
+      { id:'design-olymp', type:'Олимпиада', typeClass:'', title:'Олимпиада «Дизайн-профи»', meta:'1–11 класс · ~2 часа<br>Дедлайн: 14 октября', source:'Источник: Олимпиада.ру', why:'Ты выбрал дизайн. Олимпиада рассчитана на новичков.', format:'Онлайн, 2 тура', time:'~2 часа на тур', deadline:'14 октября', nextTitle:'Зарегистрируйся и посмотри пробный тур', nextDesc:'Регистрация — 10 минут. Пробный тур — ещё 20.' },
+      { id:'design-contest', type:'Конкурс', typeClass:'contest', title:'Конкурс «Первый шаг»', meta:'5–11 класс · ~5 часов<br>Заявки до 30 ноября', source:'Источник: РСВ', why:'Тебе подходят условия: твой класс, твой регион, новичкам можно.', format:'Проект + заявка', time:'~5 часов', deadline:'30 ноября', nextTitle:'Открой положение и выбери номинацию', nextDesc:'Это займёт 15 минут.' },
+      { id:'design-course', type:'Курс', typeClass:'course', title:'Основы UX/UI-дизайна', meta:'Любой класс · 30 минут<br>Доступ сразу', source:'Источник: Stepik', why:'Ты выбрал дизайн, у тебя нет опыта. Курс — идеальный вход.', format:'Онлайн-курс', time:'Первый раздел — ~30 минут', deadline:'Без дедлайна', nextTitle:'Открой курс и пройди первый раздел', nextDesc:'Это займёт около 30 минут.' }
+    ],
+    science: [
+      { id:'sci-olymp', type:'Олимпиада', typeClass:'', title:'Олимпиада «Юный физик»', meta:'7–11 класс · ~3 часа<br>Дедлайн: 25 октября', source:'Источник: Олимпиада.ру', why:'Ты выбрал науку. Олимпиада для тех, кто хочет проверить себя.', format:'Онлайн, 2 тура', time:'~3 часа на тур', deadline:'25 октября', nextTitle:'Пройди пробный тур', nextDesc:'Это займёт 30 минут.' },
+      { id:'sci-contest', type:'Конкурс', typeClass:'contest', title:'Конкурс «Открытие»', meta:'8–11 класс · ~10 часов<br>Заявки до 1 декабря', source:'Источник: РСВ', why:'Ты выбрал науку. Конкурс для тех, кто хочет попробовать исследование.', format:'Исследование + защита', time:'~10 часов', deadline:'1 декабря', nextTitle:'Выбери тему исследования', nextDesc:'Это займёт 20 минут.' },
+      { id:'sci-course', type:'Курс', typeClass:'course', title:'Введение в научный метод', meta:'Любой класс · 35 минут<br>Доступ сразу', source:'Источник: Stepik', why:'Ты выбрал науку. Курс объяснит, как устроена наука изнутри.', format:'Онлайн-курс', time:'Первый раздел — ~35 минут', deadline:'Без дедлайна', nextTitle:'Открой курс и пройди первый раздел', nextDesc:'Это займёт около 35 минут.' }
+    ],
+    business: [
+      { id:'biz-olymp', type:'Олимпиада', typeClass:'', title:'Олимпиада «Экономика и финансы»', meta:'9–11 класс · ~2 часа<br>Дедлайн: 18 октября', source:'Источник: Олимпиада.ру', why:'Ты выбрал бизнес. Олимпиада для тех, кто хочет проверить себя.', format:'Онлайн, 2 тура', time:'~2 часа на тур', deadline:'18 октября', nextTitle:'Пройди пробный тур', nextDesc:'Это займёт 25 минут.' },
+      { id:'biz-contest', type:'Конкурс', typeClass:'contest', title:'Конкурс «Мой стартап»', meta:'8–11 класс · ~6 часов<br>Заявки до 20 ноября', source:'Источник: РСВ', why:'Ты выбрал бизнес. Конкурс для тех, кто хочет придумать идею.', format:'Идея + презентация', time:'~6 часов', deadline:'20 ноября', nextTitle:'Придумай идею и опиши её', nextDesc:'Это займёт 30 минут.' },
+      { id:'biz-course', type:'Курс', typeClass:'course', title:'Основы предпринимательства', meta:'Любой класс · 40 минут<br>Доступ сразу', source:'Источник: Stepik', why:'Ты выбрал бизнес. Курс объяснит базовые понятия.', format:'Онлайн-курс', time:'Первый раздел — ~40 минут', deadline:'Без дедлайна', nextTitle:'Открой курс и пройди первый раздел', nextDesc:'Это займёт около 40 минут.' }
+    ],
+    media: [
+      { id:'media-olymp', type:'Олимпиада', typeClass:'', title:'Олимпиада «Юный журналист»', meta:'8–11 класс · ~2 часа<br>Дедлайн: 22 октября', source:'Источник: Олимпиада.ру', why:'Ты выбрал медиа. Олимпиада для тех, кто хочет попробовать в журналистике.', format:'Онлайн, 2 тура', time:'~2 часа на тур', deadline:'22 октября', nextTitle:'Пройди пробный тур', nextDesc:'Это займёт 25 минут.' },
+      { id:'media-contest', type:'Конкурс', typeClass:'contest', title:'Конкурс медиа «Голос»', meta:'5–11 класс · ~4 часа<br>Заявки до 10 декабря', source:'Источник: РСВ', why:'Ты выбрал медиа. Конкурс для тех, кто хочет сделать первый материал.', format:'Материал + заявка', time:'~4 часа', deadline:'10 декабря', nextTitle:'Выбери формат и тему', nextDesc:'Это займёт 20 минут.' },
+      { id:'media-course', type:'Курс', typeClass:'course', title:'Основы медиа и контента', meta:'Любой класс · 30 минут<br>Доступ сразу', source:'Источник: Stepik', why:'Ты выбрал медиа. Курс объяснит, как устроены медиа.', format:'Онлайн-курс', time:'Первый раздел — ~30 минут', deadline:'Без дедлайна', nextTitle:'Открой курс и пройди первый раздел', nextDesc:'Это займёт около 30 минут.' }
+    ],
+    unknown: [
+      { id:'unk-olymp', type:'Олимпиада', typeClass:'', title:'Олимпиада «Первый шаг»', meta:'5–11 класс · ~1,5 часа<br>Дедлайн: 28 октября', source:'Источник: Олимпиада.ру', why:'Ты пока не знаешь, что интересно. Эта олимпиада универсальная.', format:'Онлайн, 1 тур', time:'~1,5 часа', deadline:'28 октября', nextTitle:'Пройди пробный тур', nextDesc:'Это займёт 20 минут.' },
+      { id:'unk-contest', type:'Конкурс', typeClass:'contest', title:'Конкурс «Попробуй себя»', meta:'5–11 класс · ~3 часа<br>Заявки до 5 декабря', source:'Источник: РСВ', why:'Ты не знаешь, что интересно. Конкурс даёт попробовать сразу несколько направлений.', format:'Мини-проект', time:'~3 часа', deadline:'5 декабря', nextTitle:'Выбери одно направление', nextDesc:'Это займёт 15 минут.' },
+      { id:'unk-course', type:'Курс', typeClass:'course', title:'Как понять, что тебе интересно', meta:'Любой класс · 25 минут<br>Доступ сразу', source:'Источник: Stepik', why:'Ты не знаешь, что интересно. Этот короткий курс поможет разобраться.', format:'Онлайн-курс', time:'Первый раздел — ~25 минут', deadline:'Без дедлайна', nextTitle:'Открой курс и пройди первый раздел', nextDesc:'Это займёт около 25 минут.' }
+    ]
+  };
+
+  const allOpportunities = {};
+  Object.values(dataByInterest).forEach(arr => arr.forEach(o => { allOpportunities[o.id] = o; }));
+
+  let currentOppId = 'design-course';
+
+  function renderMatchCards() {
+    const container = document.getElementById('match-cards');
+    const list = dataByInterest[selectedInterest] || dataByInterest.unknown;
+    container.innerHTML = list.map(o => `
+      <div class="card" onclick="openDetail('${o.id}')">
+        <div class="card-head">
+          <span class="card-type ${o.typeClass}">${o.type}</span>
+        </div>
+        <div class="card-title">${o.title}</div>
+        <div class="card-meta">${o.meta}</div>
+        <div class="card-source">${o.source}</div>
+      </div>
+    `).join('');
+  }
+
+  function openDetail(id) {
+    currentOppId = id;
+    const o = allOpportunities[id];
+    if (!o) return;
+    document.getElementById('detail-title').textContent = o.title;
+    document.getElementById('detail-why').textContent = o.why;
+    document.getElementById('detail-format').textContent = o.format;
+    document.getElementById('detail-time').textContent = o.time;
+    document.getElementById('detail-deadline').textContent = o.deadline;
+    document.getElementById('detail-source').textContent = o.source;
+    document.getElementById('next-title').textContent = o.nextTitle;
+    document.getElementById('next-desc').textContent = o.nextDesc;
+    goTo('screen-detail');
+  }
+
+  const feedbackButtons = document.querySelectorAll('#feedback-buttons button');
+  const continueBtn = document.getElementById('result-continue');
+
+  feedbackButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      feedbackButtons.forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      continueBtn.disabled = false;
+      continueBtn.style.opacity = '1';
+    });
+  });
+
+  function nextRecommendation() {
+    const list = dataByInterest[selectedInterest] || dataByInterest.unknown;
+    const others = list.filter(o => o.id !== currentOppId);
+    const next = others[0] || list[0];
+    openDetail(next.id);
+    setTimeout(() => goTo('screen-next'), 50);
+  }
+</script>
+</body>
+</html>
