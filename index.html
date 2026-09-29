@@ -353,6 +353,7 @@
           <div class="option" data-value="Новосибирск">Новосибирск</div>
           <div class="option" data-value="Екатеринбург">Екатеринбург</div>
           <div class="option" data-value="Самара">Самара</div>
+          <div class="option" data-value="Ростов-на-Дону">Ростов</div>
           <div class="option" data-value="Краснодар">Краснодар</div>
           <div class="option" data-value="Красноярск">Красноярск</div>
           <div class="option" data-value="Барнаул">Барнаул</div>
@@ -507,6 +508,7 @@
   let lastFeedback = null;
   let currentOppId = null;
   let currentLevel = 1;
+  let maxLevel = 1;
 
   document.querySelectorAll('#interest-chips .chip').forEach(chip => {
     chip.addEventListener('click', () => {
@@ -537,87 +539,87 @@
   // ===== ДАННЫЕ =====
   // topic: it / design / science / business / media / unknown
   // level: 1 / 2 / 3
-  // city: 'online', 'Москва', 'Санкт-Петербург', 'Казань', 'Новосибирск', 'Екатеринбург', 'Самара', ...
+  // city: 'online' или город
   const dataByInterest = {
     it: {
       "1-4": [
-        { id:'it-1-4-1', topic:'it', level:1, city:'online', type:'Курс', typeClass:'course', title:'Графический дизайн для младших', meta:'8+ лет · 9 уроков', source:'Источник: Stepik', url:'https://stepik.org/course/263579', why:'Ты в младших классах. Начни с простого.', format:'Онлайн-курс', time:'~2 часа', deadline:'Без дедлайна', nextTitle:'Открой курс', nextDesc:'Видео короткие.' },
-        { id:'it-1-4-2', topic:'it', level:2, city:'online', type:'Олимпиада', typeClass:'', title:'Олимпиада «Клеверенок»', meta:'1–4 класс · ~1 час · 85+ олимпиад', source:'Источник: Клевердети', url:'https://клевердети.рф', why:'Проверь себя.', format:'Онлайн', time:'~1 час', deadline:'Без дедлайна', nextTitle:'Выбери олимпиаду', nextDesc:'Математика.' },
-        { id:'it-1-4-3', topic:'it', level:3, city:'online', type:'Конкурс', typeClass:'contest', title:'Конкурс «ТехноСтарт»', meta:'1–4 класс · ~1 час · до 15.11', source:'Источник: Лицей №176', url:'https://liczejatyakshevayugorsk-r86.gosweb.gosuslugi.ru/', why:'Пора показать результат.', format:'Проект', time:'~1 час', deadline:'15 ноября', nextTitle:'Придумай идею', nextDesc:'Устройство.' }
+        { id:'it-1-4-1', topic:'it', level:1, city:'online', type:'Курс', typeClass:'course', title:'Графический дизайн для младших', meta:'8+ лет · 9 уроков', source:'Источник: Stepik', url:'https://stepik.org/course/263579', why:'Начни с простого.', format:'Онлайн-курс', time:'~2 часа', deadline:'Без дедлайна', nextTitle:'Открой курс', nextDesc:'Видео короткие.' },
+        { id:'it-1-4-2', topic:'it', level:2, city:'online', type:'Олимпиада', typeClass:'', title:'Олимпиада «Клеверенок»', meta:'1–4 класс · ~1 час', source:'Источник: Клевердети', url:'https://клевердети.рф', why:'Проверь себя.', format:'Онлайн', time:'~1 час', deadline:'Без дедлайна', nextTitle:'Выбери олимпиаду', nextDesc:'Математика.' },
+        { id:'it-1-4-3', topic:'it', level:3, city:'online', type:'Конкурс', typeClass:'contest', title:'Конкурс «ТехноСтарт»', meta:'1–4 класс · ~1 час', source:'Источник: Лицей №176', url:'https://liczejatyakshevayugorsk-r86.gosweb.gosuslugi.ru/', why:'Пора показать результат.', format:'Проект', time:'~1 час', deadline:'15 ноября', nextTitle:'Придумай идею', nextDesc:'Устройство.' }
       ],
       "5-6": [
         { id:'it-5-6-1', topic:'it', level:1, city:'online', type:'Курс', typeClass:'course', title:'Основы Python на Stepik', meta:'5+ класс · 40 минут', source:'Источник: Stepik', url:'https://stepik.org/course/63085', why:'Python — простой старт.', format:'Онлайн-курс', time:'~40 минут', deadline:'Без дедлайна', nextTitle:'Первый раздел', nextDesc:'Просто начни.' },
-        { id:'it-5-6-2', topic:'it', level:2, city:'online', type:'Олимпиада', typeClass:'', title:'Олимпиада «Альтаир. Звездный вызов»', meta:'5–11 класс · ~1,5 часа · 4–12 октября', source:'Источник: Альтаир', url:'https://altairdonso.ru/', why:'Проверь себя.', format:'Онлайн', time:'~1,5 часа', deadline:'12 октября', nextTitle:'Пройди олимпиаду', nextDesc:'Космос.' },
-        { id:'it-5-6-3', topic:'it', level:3, city:'online', type:'Олимпиада', typeClass:'', title:'НТО Юниоры', meta:'5–7 класс · ~2 часа · до 9 ноября', source:'Источник: НТО', url:'https://ntcontest.ru/', why:'Покажи результат.', format:'Командный', time:'~2 часа', deadline:'9 ноября', nextTitle:'Собери команду', nextDesc:'Выбери сферу.' }
+        { id:'it-5-6-2', topic:'it', level:2, city:'online', type:'Олимпиада', typeClass:'', title:'Олимпиада «Альтаир. Звездный вызов»', meta:'5–11 класс · ~1,5 часа', source:'Источник: Альтаир', url:'https://altairdonso.ru/', why:'Проверь себя.', format:'Онлайн', time:'~1,5 часа', deadline:'12 октября', nextTitle:'Пройди олимпиаду', nextDesc:'Космос.' },
+        { id:'it-5-6-3', topic:'it', level:3, city:'online', type:'Олимпиада', typeClass:'', title:'НТО Юниоры', meta:'5–7 класс · ~2 часа', source:'Источник: НТО', url:'https://ntcontest.ru/', why:'Покажи результат.', format:'Командный', time:'~2 часа', deadline:'9 ноября', nextTitle:'Собери команду', nextDesc:'Выбери сферу.' }
       ],
       "7": [
         { id:'it-7-1', topic:'it', level:1, city:'online', type:'Курс', typeClass:'course', title:'Основы Python', meta:'5+ класс · 40 минут', source:'Источник: Stepik', url:'https://stepik.org/course/63085', why:'Начни с курса.', format:'Онлайн-курс', time:'~40 минут', deadline:'Без дедлайна', nextTitle:'Первый раздел', nextDesc:'Просто начни.' },
-        { id:'it-7-2', topic:'it', level:2, city:'online', type:'Олимпиада', typeClass:'', title:'НТО Юниоры', meta:'5–7 класс · ~2 часа · до 9 ноября', source:'Источник: НТО', url:'https://ntcontest.ru/', why:'Командные задачи.', format:'Командный', time:'~2 часа', deadline:'9 ноября', nextTitle:'Зарегистрируйся', nextDesc:'Выбери сферу.' },
-        { id:'it-7-3', topic:'it', level:3, city:'online', type:'Олимпиада', typeClass:'', title:'Олимпиада по ИИ', meta:'8–11 класс · ~2 часа · до 6 октября', source:'Источник: ai.edu.gov.ru', url:'https://ai.edu.gov.ru/', why:'Покажи результат.', format:'Онлайн', time:'~2 часа', deadline:'6 октября', nextTitle:'Зарегистрируйся', nextDesc:'ИИ.' }
+        { id:'it-7-2', topic:'it', level:2, city:'online', type:'Олимпиада', typeClass:'', title:'НТО Юниоры', meta:'5–7 класс · ~2 часа', source:'Источник: НТО', url:'https://ntcontest.ru/', why:'Командные задачи.', format:'Командный', time:'~2 часа', deadline:'9 ноября', nextTitle:'Зарегистрируйся', nextDesc:'Выбери сферу.' },
+        { id:'it-7-3', topic:'it', level:3, city:'online', type:'Олимпиада', typeClass:'', title:'Олимпиада по ИИ', meta:'8–11 класс · ~2 часа', source:'Источник: ai.edu.gov.ru', url:'https://ai.edu.gov.ru/', why:'Покажи результат.', format:'Онлайн', time:'~2 часа', deadline:'6 октября', nextTitle:'Зарегистрируйся', nextDesc:'ИИ.' }
       ],
       "8": [
         { id:'it-8-1', topic:'it', level:1, city:'online', type:'Курс', typeClass:'course', title:'Код будущего (Python)', meta:'8–11 класс · 144 часа', source:'Источник: Госуслуги', url:'https://www.gosuslugi.ru/futurecode', why:'Идеальный старт.', format:'Онлайн/офлайн', time:'144 часа', deadline:'Запись открыта', nextTitle:'Подай заявку', nextDesc:'Python.' },
-        { id:'it-8-2', topic:'it', level:2, city:'online', type:'Олимпиада', typeClass:'', title:'Всесибирская олимпиада по информатике', meta:'8–11 класс · ~3 часа · Октябрь–ноябрь', source:'Источник: НГУ', url:'https://sesc.nsu.ru/', why:'Углубись — олимпиада I уровня.', format:'Онлайн + очно', time:'~3 часа', deadline:'Ноябрь', nextTitle:'Зарегистрируйся', nextDesc:'Первый этап онлайн.' },
-        { id:'it-8-3', topic:'it', level:3, city:'Москва', type:'Олимпиада', typeClass:'', title:'Олимпиада «Росатом» по информатике', meta:'8–11 класс · ~3 часа · Ноябрь–март', source:'Источник: МИФИ', url:'https://rosatom.olimpiada.ru/', why:'I уровень, даёт льготы. Финал в Москве.', format:'Очно, Москва', time:'~3 часа', deadline:'Март', nextTitle:'Зарегистрируйся', nextDesc:'Отборочный онлайн, финал очно.' }
+        { id:'it-8-2', topic:'it', level:2, city:'online', type:'Олимпиада', typeClass:'', title:'Всесибирская олимпиада по информатике', meta:'8–11 класс · ~3 часа', source:'Источник: НГУ', url:'https://sesc.nsu.ru/', why:'Углубись — I уровень.', format:'Онлайн + очно', time:'~3 часа', deadline:'Ноябрь', nextTitle:'Зарегистрируйся', nextDesc:'Первый этап онлайн.' },
+        { id:'it-8-3', topic:'it', level:3, city:'Москва', type:'Олимпиада', typeClass:'', title:'Олимпиада «Робофест»', meta:'8–11 класс · ~4 часа', source:'Источник: Робофест', url:'https://robo-fest.ru/', why:'Покажи результат. II уровень.', format:'Очно, Москва', time:'~4 часа', deadline:'Март', nextTitle:'Зарегистрируйся', nextDesc:'Финал в Москве.' }
       ],
       "9": [
         { id:'it-9-1', topic:'it', level:1, city:'online', type:'Курс', typeClass:'course', title:'Сириус.Курсы', meta:'7–11 класс · 40+ курсов', source:'Источник: Сириус', url:'https://sochisirius.ru/', why:'Курсы — хороший старт.', format:'Онлайн', time:'Разная', deadline:'Без дедлайна', nextTitle:'Выбери курс', nextDesc:'Первый модуль.' },
         { id:'it-9-2', topic:'it', level:2, city:'online', type:'Курс', typeClass:'course', title:'Код будущего (AI)', meta:'9–11 класс · 144 часа', source:'Источник: Госуслуги', url:'https://www.gosuslugi.ru/futurecode', why:'Углубись.', format:'Онлайн/офлайн', time:'144 часа', deadline:'Запись открыта', nextTitle:'Выбери AI-курс', nextDesc:'Python или AI.' },
-        { id:'it-9-3', topic:'it', level:3, city:'Москва', type:'Олимпиада', typeClass:'', title:'Олимпиада «Росатом» по информатике', meta:'9–11 класс · ~3 часа · Ноябрь–март', source:'Источник: МИФИ', url:'https://rosatom.olimpiada.ru/', why:'I уровень, даёт льготы.', format:'Очно, Москва', time:'~3 часа', deadline:'Март', nextTitle:'Зарегистрируйся', nextDesc:'Финал в Москве.' }
+        { id:'it-9-3', topic:'it', level:3, city:'Москва', type:'Олимпиада', typeClass:'', title:'Олимпиада «Робофест»', meta:'9–11 класс · ~4 часа', source:'Источник: Робофест', url:'https://robo-fest.ru/', why:'Покажи результат. II уровень.', format:'Очно, Москва', time:'~4 часа', deadline:'Март', nextTitle:'Зарегистрируйся', nextDesc:'Финал в Москве.' }
       ],
       "10": [
         { id:'it-10-1', topic:'it', level:1, city:'online', type:'Курс', typeClass:'course', title:'Сириус.Курсы (программирование)', meta:'7–11 класс · 40+ курсов', source:'Источник: Сириус', url:'https://sochisirius.ru/', why:'Начни с курса.', format:'Онлайн', time:'Разная', deadline:'Без дедлайна', nextTitle:'Выбери курс', nextDesc:'Первый модуль.' },
         { id:'it-10-2', topic:'it', level:2, city:'online', type:'Курс', typeClass:'course', title:'Код будущего (профессиональный)', meta:'10–11 класс · 144 часа', source:'Источник: Госуслуги', url:'https://www.gosuslugi.ru/futurecode', why:'Углубись.', format:'Онлайн/офлайн', time:'144 часа', deadline:'Запись открыта', nextTitle:'Подай заявку', nextDesc:'AI или разработка.' },
-        { id:'it-10-3', topic:'it', level:3, city:'Москва', type:'Олимпиада', typeClass:'', title:'Олимпиада «Росатом» по информатике', meta:'10–11 класс · ~3 часа · Ноябрь–март', source:'Источник: МИФИ', url:'https://rosatom.olimpiada.ru/', why:'I уровень, даёт льготы. Финал в Москве.', format:'Очно, Москва', time:'~3 часа', deadline:'Март', nextTitle:'Зарегистрируйся', nextDesc:'Финал в Москве.' }
+        { id:'it-10-3', topic:'it', level:3, city:'Москва', type:'Олимпиада', typeClass:'', title:'Олимпиада «Робофест»', meta:'10–11 класс · ~4 часа', source:'Источник: Робофест', url:'https://robo-fest.ru/', why:'Покажи результат. II уровень.', format:'Очно, Москва', time:'~4 часа', deadline:'Март', nextTitle:'Зарегистрируйся', nextDesc:'Финал в Москве.' }
       ],
       "11": [
         { id:'it-11-1', topic:'it', level:1, city:'online', type:'Курс', typeClass:'course', title:'Код будущего (подготовка)', meta:'11 класс · 144 часа', source:'Источник: Госуслуги', url:'https://www.gosuslugi.ru/futurecode', why:'Начни с курса.', format:'Онлайн/офлайн', time:'144 часа', deadline:'Запись открыта', nextTitle:'Выбери курс', nextDesc:'Для подготовки.' },
-        { id:'it-11-2', topic:'it', level:2, city:'online', type:'Олимпиада', typeClass:'', title:'Innopolis Open', meta:'11 класс · ~2 часа · до 20 октября', source:'Источник: Innopolis', url:'https://innopolis.university/', why:'Углубись.', format:'Онлайн', time:'~2 часа', deadline:'20 октября', nextTitle:'Зарегистрируйся', nextDesc:'Информатика или AI.' },
-        { id:'it-11-3', topic:'it', level:3, city:'Москва', type:'Олимпиада', typeClass:'', title:'Олимпиада «Росатом» по информатике', meta:'11 класс · ~3 часа · Ноябрь–март', source:'Источник: МИФИ', url:'https://rosatom.olimpiada.ru/', why:'I уровень, даёт льготы.', format:'Очно, Москва', time:'~3 часа', deadline:'Март', nextTitle:'Зарегистрируйся', nextDesc:'Финал в Москве.' }
+        { id:'it-11-2', topic:'it', level:2, city:'online', type:'Олимпиада', typeClass:'', title:'Innopolis Open', meta:'11 класс · ~2 часа', source:'Источник: Innopolis', url:'https://innopolis.university/', why:'Углубись.', format:'Онлайн', time:'~2 часа', deadline:'20 октября', nextTitle:'Зарегистрируйся', nextDesc:'Информатика или AI.' },
+        { id:'it-11-3', topic:'it', level:3, city:'Москва', type:'Олимпиада', typeClass:'', title:'Олимпиада «Робофест»', meta:'11 класс · ~4 часа', source:'Источник: Робофест', url:'https://robo-fest.ru/', why:'Покажи результат.', format:'Очно, Москва', time:'~4 часа', deadline:'Март', nextTitle:'Зарегистрируйся', nextDesc:'Финал в Москве.' }
       ]
     },
     design: {
       "1-4": [
         { id:'d-1-4-1', topic:'design', level:1, city:'online', type:'Курс', typeClass:'course', title:'Графический дизайн для младших', meta:'8+ лет · 9 уроков', source:'Источник: Stepik', url:'https://stepik.org/course/263579', why:'Начни с простого.', format:'Онлайн-курс', time:'~2 часа', deadline:'Без дедлайна', nextTitle:'Посмотри урок', nextDesc:'Видео короткие.' },
         { id:'d-1-4-2', topic:'design', level:2, city:'online', type:'Олимпиада', typeClass:'', title:'Олимпиада «Клеверенок»', meta:'1–4 класс · ~1 час', source:'Источник: Клевердети', url:'https://клевердети.рф', why:'Углубись.', format:'Онлайн', time:'~1 час', deadline:'Без дедлайна', nextTitle:'Выбери олимпиаду', nextDesc:'Рисование.' },
-        { id:'d-1-4-3', topic:'design', level:3, city:'online', type:'Конкурс', typeClass:'contest', title:'Конкурс «Мои первые открытия»', meta:'1–4 класс · ~1 час · Ноябрь', source:'Источник: Инженерная школа №777', url:'https://liczejatyakshevayugorsk-r86.gosweb.gosuslugi.ru/', why:'Покажи результат.', format:'Проект', time:'~1 час', deadline:'Ноябрь', nextTitle:'Придумай проект', nextDesc:'Рисунок.' }
+        { id:'d-1-4-3', topic:'design', level:3, city:'online', type:'Конкурс', typeClass:'contest', title:'Конкурс «Мои первые открытия»', meta:'1–4 класс · ~1 час', source:'Источник: Инженерная школа №777', url:'https://liczejatyakshevayugorsk-r86.gosweb.gosuslugi.ru/', why:'Покажи результат.', format:'Проект', time:'~1 час', deadline:'Ноябрь', nextTitle:'Придумай проект', nextDesc:'Рисунок.' }
       ],
       "5-6": [
         { id:'d-5-6-1', topic:'design', level:1, city:'online', type:'Курс', typeClass:'course', title:'Основы графического дизайна', meta:'12–17 лет · 33 урока', source:'Источник: Stepik', url:'https://stepik.org/course/252183', why:'Изучи редакторы.', format:'Онлайн-курс', time:'~5 часов', deadline:'Без дедлайна', nextTitle:'Первый модуль', nextDesc:'Photoshop.' },
-        { id:'d-5-6-2', topic:'design', level:2, city:'online', type:'Конкурс', typeClass:'contest', title:'ArtMasters Юниоры', meta:'14–17 лет · ~3 часа · заочно', source:'Источник: ArtMasters', url:'https://artmasters.ru/', why:'Углубись — попробуй 3D или веб-дизайн.', format:'Онлайн', time:'~3 часа', deadline:'Апрель', nextTitle:'Выбери компетенцию', nextDesc:'3D-дизайнер, веб-дизайнер.' },
-        { id:'d-5-6-3', topic:'design', level:3, city:'Москва', type:'Олимпиада', typeClass:'', title:'Строгановская олимпиада', meta:'6–11 класс · ~6 часов · Март', source:'Источник: РГХПУ им. Строганова', url:'https://stroganov-olympiada.ru/', why:'Покажи результат. I уровень, финал в Москве.', format:'Очно, Москва', time:'~6 часов', deadline:'Март', nextTitle:'Подготовь работы', nextDesc:'Рисунок, живопись.' }
+        { id:'d-5-6-2', topic:'design', level:2, city:'online', type:'Конкурс', typeClass:'contest', title:'ArtMasters Юниоры', meta:'14–17 лет · ~3 часа', source:'Источник: ArtMasters', url:'https://artmasters.ru/', why:'Углубись.', format:'Онлайн', time:'~3 часа', deadline:'Апрель', nextTitle:'Выбери компетенцию', nextDesc:'3D-дизайнер.' },
+        { id:'d-5-6-3', topic:'design', level:3, city:'Москва', type:'Олимпиада', typeClass:'', title:'Строгановская олимпиада', meta:'6–11 класс · ~6 часов', source:'Источник: РГХПУ им. Строганова', url:'https://stroganov-olympiada.ru/', why:'Покажи результат. I уровень.', format:'Очно, Москва', time:'~6 часов', deadline:'Март', nextTitle:'Подготовь работы', nextDesc:'Рисунок.' }
       ],
       "7": [
         { id:'d-7-1', topic:'design', level:1, city:'online', type:'Курс', typeClass:'course', title:'Основы графического дизайна', meta:'12–17 лет · 33 урока', source:'Источник: Stepik', url:'https://stepik.org/course/252183', why:'Начни с курса.', format:'Онлайн-курс', time:'~5 часов', deadline:'Без дедлайна', nextTitle:'Первый модуль', nextDesc:'Photoshop.' },
         { id:'d-7-2', topic:'design', level:2, city:'online', type:'Конкурс', typeClass:'contest', title:'ArtMasters Юниоры', meta:'14–17 лет · ~3 часа', source:'Источник: ArtMasters', url:'https://artmasters.ru/', why:'Углубись.', format:'Онлайн', time:'~3 часа', deadline:'Апрель', nextTitle:'Выбери компетенцию', nextDesc:'3D-дизайнер.' },
-        { id:'d-7-3', topic:'design', level:3, city:'Москва', type:'Олимпиада', typeClass:'', title:'Строгановская олимпиада', meta:'6–11 класс · ~6 часов · Март', source:'Источник: РГХПУ им. Строганова', url:'https://stroganov-olympiada.ru/', why:'Покажи результат.', format:'Очно, Москва', time:'~6 часов', deadline:'Март', nextTitle:'Подготовь работы', nextDesc:'Рисунок.' }
+        { id:'d-7-3', topic:'design', level:3, city:'Москва', type:'Олимпиада', typeClass:'', title:'Строгановская олимпиада', meta:'6–11 класс · ~6 часов', source:'Источник: РГХПУ им. Строганова', url:'https://stroganov-olympiada.ru/', why:'Покажи результат.', format:'Очно, Москва', time:'~6 часов', deadline:'Март', nextTitle:'Подготовь работы', nextDesc:'Рисунок.' }
       ],
       "8": [
         { id:'d-8-1', topic:'design', level:1, city:'online', type:'Курс', typeClass:'course', title:'Основы графического дизайна', meta:'12–17 лет · 33 урока', source:'Источник: Stepik', url:'https://stepik.org/course/252183', why:'Начни с курса.', format:'Онлайн-курс', time:'~5 часов', deadline:'Без дедлайна', nextTitle:'Первый модуль', nextDesc:'Photoshop.' },
         { id:'d-8-2', topic:'design', level:2, city:'online', type:'Конкурс', typeClass:'contest', title:'ArtMasters Юниоры', meta:'14–17 лет · ~3 часа', source:'Источник: ArtMasters', url:'https://artmasters.ru/', why:'Углубись.', format:'Онлайн', time:'~3 часа', deadline:'Апрель', nextTitle:'Выбери компетенцию', nextDesc:'3D-дизайнер.' },
-        { id:'d-8-3', topic:'design', level:3, city:'Москва', type:'Олимпиада', typeClass:'', title:'Высшая проба по дизайну', meta:'8–11 класс · ~3 часа · до 13 ноября', source:'Источник: НИУ ВШЭ', url:'https://olymp.hse.ru/', why:'I уровень, даёт льготы. Финал в Москве.', format:'Очно, Москва', time:'~3 часа', deadline:'13 ноября', nextTitle:'Зарегистрируйся', nextDesc:'Проект.' }
+        { id:'d-8-3', topic:'design', level:3, city:'Ростов-на-Дону', type:'Олимпиада', typeClass:'', title:'Южно-Российская олимпиада «Архитектура и искусство»', meta:'8–11 класс · ~6 часов', source:'Источник: ЮФУ', url:'https://abiturient.sfedu.ru/', why:'Покажи результат. I уровень.', format:'Очно, Ростов-на-Дону', time:'~6 часов', deadline:'Март', nextTitle:'Зарегистрируйся', nextDesc:'Рисунок, живопись, композиция.' }
       ],
       "9": [
         { id:'d-9-1', topic:'design', level:1, city:'online', type:'Курс', typeClass:'course', title:'Основы графического дизайна', meta:'12–17 лет · 33 урока', source:'Источник: Stepik', url:'https://stepik.org/course/252183', why:'Начни с курса.', format:'Онлайн', time:'~5 часов', deadline:'Без дедлайна', nextTitle:'Первый модуль', nextDesc:'Photoshop.' },
         { id:'d-9-2', topic:'design', level:2, city:'online', type:'Конкурс', typeClass:'contest', title:'ArtMasters Юниоры', meta:'14–17 лет · ~3 часа', source:'Источник: ArtMasters', url:'https://artmasters.ru/', why:'Углубись.', format:'Онлайн', time:'~3 часа', deadline:'Апрель', nextTitle:'Выбери компетенцию', nextDesc:'3D-дизайнер.' },
-        { id:'d-9-3', topic:'design', level:3, city:'Москва', type:'Олимпиада', typeClass:'', title:'Высшая проба по дизайну', meta:'9–11 класс · ~3 часа · до 13 ноября', source:'Источник: НИУ ВШЭ', url:'https://olymp.hse.ru/', why:'I уровень, даёт льготы.', format:'Очно, Москва', time:'~3 часа', deadline:'13 ноября', nextTitle:'Зарегистрируйся', nextDesc:'Проект.' }
+        { id:'d-9-3', topic:'design', level:3, city:'Москва', type:'Олимпиада', typeClass:'', title:'Высшая проба по дизайну', meta:'9–11 класс · ~3 часа', source:'Источник: НИУ ВШЭ', url:'https://olymp.hse.ru/', why:'I уровень, даёт льготы.', format:'Очно, Москва', time:'~3 часа', deadline:'13 ноября', nextTitle:'Зарегистрируйся', nextDesc:'Проект.' }
       ],
       "10": [
         { id:'d-10-1', topic:'design', level:1, city:'online', type:'Курс', typeClass:'course', title:'Основы графического дизайна', meta:'12–17 лет · 33 урока', source:'Источник: Stepik', url:'https://stepik.org/course/252183', why:'Начни с курса.', format:'Онлайн', time:'~5 часов', deadline:'Без дедлайна', nextTitle:'Первый модуль', nextDesc:'Photoshop.' },
         { id:'d-10-2', topic:'design', level:2, city:'online', type:'Конкурс', typeClass:'contest', title:'ArtMasters Юниоры', meta:'14–17 лет · ~3 часа', source:'Источник: ArtMasters', url:'https://artmasters.ru/', why:'Углубись.', format:'Онлайн', time:'~3 часа', deadline:'Апрель', nextTitle:'Выбери компетенцию', nextDesc:'3D-дизайнер.' },
-        { id:'d-10-3', topic:'design', level:3, city:'Москва', type:'Олимпиада', typeClass:'', title:'Высшая проба по дизайну', meta:'10 класс · ~3 часа · до 13 ноября', source:'Источник: НИУ ВШЭ', url:'https://olymp.hse.ru/', why:'I уровень, даёт льготы.', format:'Очно, Москва', time:'~3 часа', deadline:'13 ноября', nextTitle:'Зарегистрируйся', nextDesc:'Проект.' }
+        { id:'d-10-3', topic:'design', level:3, city:'Ростов-на-Дону', type:'Олимпиада', typeClass:'', title:'Южно-Российская олимпиада «Архитектура и искусство»', meta:'10–11 класс · ~6 часов', source:'Источник: ЮФУ', url:'https://abiturient.sfedu.ru/', why:'Покажи результат. I уровень.', format:'Очно, Ростов-на-Дону', time:'~6 часов', deadline:'Март', nextTitle:'Зарегистрируйся', nextDesc:'Рисунок, живопись.' }
       ],
       "11": [
         { id:'d-11-1', topic:'design', level:1, city:'online', type:'Курс', typeClass:'course', title:'Основы графического дизайна', meta:'12–17 лет · 33 урока', source:'Источник: Stepik', url:'https://stepik.org/course/252183', why:'Начни с курса.', format:'Онлайн', time:'~5 часов', deadline:'Без дедлайна', nextTitle:'Первый модуль', nextDesc:'Photoshop.' },
         { id:'d-11-2', topic:'design', level:2, city:'online', type:'Конкурс', typeClass:'contest', title:'ArtMasters Юниоры', meta:'14–17 лет · ~3 часа', source:'Источник: ArtMasters', url:'https://artmasters.ru/', why:'Углубись.', format:'Онлайн', time:'~3 часа', deadline:'Апрель', nextTitle:'Выбери компетенцию', nextDesc:'3D-дизайнер.' },
-        { id:'d-11-3', topic:'design', level:3, city:'Москва', type:'Олимпиада', typeClass:'', title:'Высшая проба по дизайну', meta:'11 класс · ~3 часа · до 13 ноября', source:'Источник: НИУ ВШЭ', url:'https://olymp.hse.ru/', why:'I уровень, даёт льготы.', format:'Очно, Москва', time:'~3 часа', deadline:'13 ноября', nextTitle:'Зарегистрируйся', nextDesc:'Проект.' }
+        { id:'d-11-3', topic:'design', level:3, city:'Москва', type:'Олимпиада', typeClass:'', title:'Высшая проба по дизайну', meta:'11 класс · ~3 часа', source:'Источник: НИУ ВШЭ', url:'https://olymp.hse.ru/', why:'I уровень, даёт льготы.', format:'Очно, Москва', time:'~3 часа', deadline:'13 ноября', nextTitle:'Зарегистрируйся', nextDesc:'Проект.' }
       ]
     },
     science: {
       "1-4": [
         { id:'s-1-4-1', topic:'science', level:1, city:'online', type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Начни с простого.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Сертификат.' },
         { id:'s-1-4-2', topic:'science', level:2, city:'online', type:'Олимпиада', typeClass:'', title:'Олимпиада «Клеверенок»', meta:'1–4 класс · ~1 час', source:'Источник: Клевердети', url:'https://клевердети.рф', why:'Углубись.', format:'Онлайн', time:'~1 час', deadline:'Без дедлайна', nextTitle:'Выбери предмет', nextDesc:'Окружающий мир.' },
-        { id:'s-1-4-3', topic:'science', level:3, city:'online', type:'Конкурс', typeClass:'contest', title:'Конкурс «Мои первые открытия»', meta:'1–4 класс · ~1 час · Ноябрь', source:'Источник: Инженерная школа №777', url:'https://liczejatyakshevayugorsk-r86.gosweb.gosuslugi.ru/', why:'Покажи результат.', format:'Проект', time:'~1 час', deadline:'Ноябрь', nextTitle:'Придумай проект', nextDesc:'О природе.' }
+        { id:'s-1-4-3', topic:'science', level:3, city:'online', type:'Конкурс', typeClass:'contest', title:'Конкурс «Мои первые открытия»', meta:'1–4 класс · ~1 час', source:'Источник: Инженерная школа №777', url:'https://liczejatyakshevayugorsk-r86.gosweb.gosuslugi.ru/', why:'Покажи результат.', format:'Проект', time:'~1 час', deadline:'Ноябрь', nextTitle:'Придумай проект', nextDesc:'О природе.' }
       ],
       "5-6": [
         { id:'s-5-6-1', topic:'science', level:1, city:'online', type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Начни с простого.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Сертификат.' },
@@ -631,23 +633,23 @@
       ],
       "8": [
         { id:'s-8-1', topic:'science', level:1, city:'online', type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Начни с простого.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Сертификат.' },
-        { id:'s-8-2', topic:'science', level:2, city:'online', type:'Олимпиада', typeClass:'', title:'Всесибирская олимпиада', meta:'8–11 класс · ~3 часа · Октябрь–ноябрь', source:'Источник: НГУ', url:'https://sesc.nsu.ru/', why:'Углубись — I уровень.', format:'Онлайн + очно', time:'~3 часа', deadline:'Ноябрь', nextTitle:'Зарегистрируйся', nextDesc:'Онлайн-этап.' },
-        { id:'s-8-3', topic:'science', level:3, city:'Новосибирск', type:'Олимпиада', typeClass:'', title:'Всесибирская олимпиада (финал)', meta:'8–11 класс · ~4 часа · Февраль', source:'Источник: НГУ', url:'https://sesc.nsu.ru/', why:'Покажи результат. Финал в Новосибирске.', format:'Очно, Новосибирск', time:'~4 часа', deadline:'Февраль', nextTitle:'Пройди онлайн-этап', nextDesc:'Затем финал.' }
+        { id:'s-8-2', topic:'science', level:2, city:'online', type:'Олимпиада', typeClass:'', title:'Всесибирская олимпиада', meta:'8–11 класс · ~3 часа', source:'Источник: НГУ', url:'https://sesc.nsu.ru/', why:'Углубись — I уровень.', format:'Онлайн + очно', time:'~3 часа', deadline:'Ноябрь', nextTitle:'Зарегистрируйся', nextDesc:'Онлайн-этап.' },
+        { id:'s-8-3', topic:'science', level:3, city:'Новосибирск', type:'Олимпиада', typeClass:'', title:'Всесибирская олимпиада (финал)', meta:'8–11 класс · ~4 часа', source:'Источник: НГУ', url:'https://sesc.nsu.ru/', why:'Покажи результат. Финал в Новосибирске.', format:'Очно, Новосибирск', time:'~4 часа', deadline:'Февраль', nextTitle:'Пройди онлайн-этап', nextDesc:'Затем финал.' }
       ],
       "9": [
         { id:'s-9-1', topic:'science', level:1, city:'online', type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Начни с простого.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Сертификат.' },
         { id:'s-9-2', topic:'science', level:2, city:'online', type:'Курс', typeClass:'course', title:'Сириус.Курсы', meta:'9–11 класс · 40+ курсов', source:'Источник: Сириус', url:'https://sochisirius.ru/', why:'Углубись.', format:'Онлайн', time:'Разная', deadline:'Без дедлайна', nextTitle:'Выбери курс', nextDesc:'Физика.' },
-        { id:'s-9-3', topic:'science', level:3, city:'Новосибирск', type:'Олимпиада', typeClass:'', title:'Всесибирская олимпиада (финал)', meta:'9–11 класс · ~4 часа · Февраль', source:'Источник: НГУ', url:'https://sesc.nsu.ru/', why:'Покажи результат.', format:'Очно, Новосибирск', time:'~4 часа', deadline:'Февраль', nextTitle:'Пройди онлайн-этап', nextDesc:'Затем финал.' }
+        { id:'s-9-3', topic:'science', level:3, city:'Новосибирск', type:'Олимпиада', typeClass:'', title:'Всесибирская олимпиада (финал)', meta:'9–11 класс · ~4 часа', source:'Источник: НГУ', url:'https://sesc.nsu.ru/', why:'Покажи результат.', format:'Очно, Новосибирск', time:'~4 часа', deadline:'Февраль', nextTitle:'Пройди онлайн-этап', nextDesc:'Затем финал.' }
       ],
       "10": [
         { id:'s-10-1', topic:'science', level:1, city:'online', type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Начни с простого.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Сертификат.' },
         { id:'s-10-2', topic:'science', level:2, city:'online', type:'Курс', typeClass:'course', title:'Сириус.Курсы', meta:'10–11 класс · 40+ курсов', source:'Источник: Сириус', url:'https://sochisirius.ru/', why:'Углубись.', format:'Онлайн', time:'Разная', deadline:'Без дедлайна', nextTitle:'Выбери курс', nextDesc:'Физика.' },
-        { id:'s-10-3', topic:'science', level:3, city:'Новосибирск', type:'Олимпиада', typeClass:'', title:'Всесибирская олимпиада (финал)', meta:'10 класс · ~4 часа · Февраль', source:'Источник: НГУ', url:'https://sesc.nsu.ru/', why:'Покажи результат.', format:'Очно, Новосибирск', time:'~4 часа', deadline:'Февраль', nextTitle:'Пройди онлайн-этап', nextDesc:'Затем финал.' }
+        { id:'s-10-3', topic:'science', level:3, city:'Новосибирск', type:'Олимпиада', typeClass:'', title:'Всесибирская олимпиада (финал)', meta:'10 класс · ~4 часа', source:'Источник: НГУ', url:'https://sesc.nsu.ru/', why:'Покажи результат.', format:'Очно, Новосибирск', time:'~4 часа', deadline:'Февраль', nextTitle:'Пройди онлайн-этап', nextDesc:'Затем финал.' }
       ],
       "11": [
         { id:'s-11-1', topic:'science', level:1, city:'online', type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Начни с простого.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Сертификат.' },
         { id:'s-11-2', topic:'science', level:2, city:'online', type:'Курс', typeClass:'course', title:'Сириус.Курсы', meta:'11 класс · 40+ курсов', source:'Источник: Сириус', url:'https://sochisirius.ru/', why:'Углубись.', format:'Онлайн', time:'Разная', deadline:'Без дедлайна', nextTitle:'Выбери курс', nextDesc:'Физика.' },
-        { id:'s-11-3', topic:'science', level:3, city:'Новосибирск', type:'Олимпиада', typeClass:'', title:'Всесибирская олимпиада (финал)', meta:'11 класс · ~4 часа · Февраль', source:'Источник: НГУ', url:'https://sesc.nsu.ru/', why:'Покажи результат.', format:'Очно, Новосибирск', time:'~4 часа', deadline:'Февраль', nextTitle:'Пройди онлайн-этап', nextDesc:'Затем финал.' }
+        { id:'s-11-3', topic:'science', level:3, city:'Новосибирск', type:'Олимпиада', typeClass:'', title:'Всесибирская олимпиада (финал)', meta:'11 класс · ~4 часа', source:'Источник: НГУ', url:'https://sesc.nsu.ru/', why:'Покажи результат.', format:'Очно, Новосибирск', time:'~4 часа', deadline:'Февраль', nextTitle:'Пройди онлайн-этап', nextDesc:'Затем финал.' }
       ]
     },
     business: {
@@ -668,30 +670,30 @@
       ],
       "8": [
         { id:'b-8-1', topic:'business', level:1, city:'online', type:'Курс', typeClass:'course', title:'Основы предпринимательства', meta:'Любой класс · 40 минут', source:'Источник: Stepik', url:'https://stepik.org/course/38218', why:'Начни с курса.', format:'Онлайн-курс', time:'~40 минут', deadline:'Без дедлайна', nextTitle:'Первый раздел', nextDesc:'Простые объяснения.' },
-        { id:'b-8-2', topic:'business', level:2, city:'online', type:'Олимпиада', typeClass:'', title:'Финатлон для старшеклассников', meta:'8–11 класс · ~3 часа · Ноябрь–март', source:'Источник: Финатлон', url:'https://finatlon.ru/', why:'Углубись — III уровень перечня.', format:'Онлайн + очно', time:'~3 часа', deadline:'Март', nextTitle:'Зарегистрируйся', nextDesc:'Финансовая грамотность.' },
-        { id:'b-8-3', topic:'business', level:3, city:'Москва', type:'Олимпиада', typeClass:'', title:'Олимпиада «Ломоносов» по предпринимательству', meta:'8–11 класс · ~3 часа · до 29 ноября', source:'Источник: МГУ', url:'https://olymp.msu.ru/', why:'Покажи результат. Финал в Москве.', format:'Очно, Москва', time:'~3 часа', deadline:'29 ноября', nextTitle:'Зарегистрируйся', nextDesc:'Бизнес-задачи.' }
+        { id:'b-8-2', topic:'business', level:2, city:'online', type:'Олимпиада', typeClass:'', title:'Финатлон для старшеклассников', meta:'8–11 класс · ~3 часа', source:'Источник: Финатлон', url:'https://finatlon.ru/', why:'Углубись — III уровень.', format:'Онлайн + очно', time:'~3 часа', deadline:'Март', nextTitle:'Зарегистрируйся', nextDesc:'Финансовая грамотность.' },
+        { id:'b-8-3', topic:'business', level:3, city:'Самара', type:'Олимпиада', typeClass:'', title:'Финатлон (финал)', meta:'8–11 класс · ~3 часа', source:'Источник: СГЭУ', url:'https://finatlon.ru/', why:'Покажи результат. Финал в Самаре.', format:'Очно, Самара', time:'~3 часа', deadline:'Март', nextTitle:'Пройди отборочный', nextDesc:'Затем финал.' }
       ],
       "9": [
         { id:'b-9-1', topic:'business', level:1, city:'online', type:'Курс', typeClass:'course', title:'Основы предпринимательства', meta:'Любой класс · 40 минут', source:'Источник: Stepik', url:'https://stepik.org/course/38218', why:'Начни с курса.', format:'Онлайн-курс', time:'~40 минут', deadline:'Без дедлайна', nextTitle:'Первый раздел', nextDesc:'Простые объяснения.' },
         { id:'b-9-2', topic:'business', level:2, city:'online', type:'Олимпиада', typeClass:'', title:'Финатлон для старшеклассников', meta:'9–11 класс · ~3 часа', source:'Источник: Финатлон', url:'https://finatlon.ru/', why:'Углубись.', format:'Онлайн + очно', time:'~3 часа', deadline:'Март', nextTitle:'Зарегистрируйся', nextDesc:'Финансовая грамотность.' },
-        { id:'b-9-3', topic:'business', level:3, city:'Москва', type:'Олимпиада', typeClass:'', title:'Олимпиада «Ломоносов» по предпринимательству', meta:'9 класс · ~3 часа · до 29 ноября', source:'Источник: МГУ', url:'https://olymp.msu.ru/', why:'Покажи результат.', format:'Очно, Москва', time:'~3 часа', deadline:'29 ноября', nextTitle:'Зарегистрируйся', nextDesc:'Бизнес-задачи.' }
+        { id:'b-9-3', topic:'business', level:3, city:'Москва', type:'Олимпиада', typeClass:'', title:'Олимпиада «Ломоносов» по предпринимательству', meta:'9 класс · ~3 часа', source:'Источник: МГУ', url:'https://olymp.msu.ru/', why:'Покажи результат.', format:'Очно, Москва', time:'~3 часа', deadline:'29 ноября', nextTitle:'Зарегистрируйся', nextDesc:'Бизнес-задачи.' }
       ],
       "10": [
         { id:'b-10-1', topic:'business', level:1, city:'online', type:'Курс', typeClass:'course', title:'Основы предпринимательства', meta:'Любой класс · 40 минут', source:'Источник: Stepik', url:'https://stepik.org/course/38218', why:'Начни с курса.', format:'Онлайн-курс', time:'~40 минут', deadline:'Без дедлайна', nextTitle:'Первый раздел', nextDesc:'Простые объяснения.' },
         { id:'b-10-2', topic:'business', level:2, city:'online', type:'Олимпиада', typeClass:'', title:'Финатлон для старшеклассников', meta:'10 класс · ~3 часа', source:'Источник: Финатлон', url:'https://finatlon.ru/', why:'Углубись.', format:'Онлайн + очно', time:'~3 часа', deadline:'Март', nextTitle:'Зарегистрируйся', nextDesc:'Финансовая грамотность.' },
-        { id:'b-10-3', topic:'business', level:3, city:'Москва', type:'Олимпиада', typeClass:'', title:'Олимпиада «Ломоносов» по предпринимательству', meta:'10 класс · ~3 часа · до 29 ноября', source:'Источник: МГУ', url:'https://olymp.msu.ru/', why:'Покажи результат.', format:'Очно, Москва', time:'~3 часа', deadline:'29 ноября', nextTitle:'Зарегистрируйся', nextDesc:'Бизнес-задачи.' }
+        { id:'b-10-3', topic:'business', level:3, city:'Москва', type:'Олимпиада', typeClass:'', title:'Олимпиада «Ломоносов» по предпринимательству', meta:'10 класс · ~3 часа', source:'Источник: МГУ', url:'https://olymp.msu.ru/', why:'Покажи результат.', format:'Очно, Москва', time:'~3 часа', deadline:'29 ноября', nextTitle:'Зарегистрируйся', nextDesc:'Бизнес-задачи.' }
       ],
       "11": [
         { id:'b-11-1', topic:'business', level:1, city:'online', type:'Курс', typeClass:'course', title:'Основы предпринимательства', meta:'Любой класс · 40 минут', source:'Источник: Stepik', url:'https://stepik.org/course/38218', why:'Начни с курса.', format:'Онлайн-курс', time:'~40 минут', deadline:'Без дедлайна', nextTitle:'Первый раздел', nextDesc:'Простые объяснения.' },
         { id:'b-11-2', topic:'business', level:2, city:'online', type:'Олимпиада', typeClass:'', title:'Финатлон для старшеклассников', meta:'11 класс · ~3 часа', source:'Источник: Финатлон', url:'https://finatlon.ru/', why:'Углубись.', format:'Онлайн + очно', time:'~3 часа', deadline:'Март', nextTitle:'Зарегистрируйся', nextDesc:'Финансовая грамотность.' },
-        { id:'b-11-3', topic:'business', level:3, city:'Москва', type:'Олимпиада', typeClass:'', title:'Олимпиада «Ломоносов» по предпринимательству', meta:'11 класс · ~3 часа · до 29 ноября', source:'Источник: МГУ', url:'https://olymp.msu.ru/', why:'Покажи результат.', format:'Очно, Москва', time:'~3 часа', deadline:'29 ноября', nextTitle:'Зарегистрируйся', nextDesc:'Бизнес-задачи.' }
+        { id:'b-11-3', topic:'business', level:3, city:'Москва', type:'Олимпиада', typeClass:'', title:'Олимпиада «Ломоносов» по предпринимательству', meta:'11 класс · ~3 часа', source:'Источник: МГУ', url:'https://olymp.msu.ru/', why:'Покажи результат.', format:'Очно, Москва', time:'~3 часа', deadline:'29 ноября', nextTitle:'Зарегистрируйся', nextDesc:'Бизнес-задачи.' }
       ]
     },
     media: {
       "1-4": [
         { id:'m-1-4-1', topic:'media', level:1, city:'online', type:'Олимпиада', typeClass:'', title:'Олимпиада «Клеверенок»', meta:'1–4 класс · ~1 час', source:'Источник: Клевердети', url:'https://клевердети.рф', why:'Начни с простого.', format:'Онлайн', time:'~1 час', deadline:'Без дедлайна', nextTitle:'Выбери олимпиаду', nextDesc:'Чтение.' },
         { id:'m-1-4-2', topic:'media', level:2, city:'online', type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Углубись.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Сертификат.' },
-        { id:'m-1-4-3', topic:'media', level:3, city:'online', type:'Конкурс', typeClass:'contest', title:'Конкурс «Мои первые открытия»', meta:'1–4 класс · ~1 час · Ноябрь', source:'Источник: Инженерная школа №777', url:'https://liczejatyakshevayugorsk-r86.gosweb.gosuslugi.ru/', why:'Покажи результат.', format:'Проект', time:'~1 час', deadline:'Ноябрь', nextTitle:'Придумай проект', nextDesc:'Рассказ.' }
+        { id:'m-1-4-3', topic:'media', level:3, city:'online', type:'Конкурс', typeClass:'contest', title:'Конкурс «Мои первые открытия»', meta:'1–4 класс · ~1 час', source:'Источник: Инженерная школа №777', url:'https://liczejatyakshevayugorsk-r86.gosweb.gosuslugi.ru/', why:'Покажи результат.', format:'Проект', time:'~1 час', deadline:'Ноябрь', nextTitle:'Придумай проект', nextDesc:'Рассказ.' }
       ],
       "5-6": [
         { id:'m-5-6-1', topic:'media', level:1, city:'online', type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Начни с простого.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Сертификат.' },
@@ -706,22 +708,22 @@
       "8": [
         { id:'m-8-1', topic:'media', level:1, city:'online', type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Начни с простого.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Сертификат.' },
         { id:'m-8-2', topic:'media', level:2, city:'online', type:'Конкурс', typeClass:'contest', title:'ArtMasters Юниоры', meta:'14–17 лет · ~3 часа', source:'Источник: ArtMasters', url:'https://artmasters.ru/', why:'Углубись.', format:'Онлайн', time:'~3 часа', deadline:'Апрель', nextTitle:'Выбери компетенцию', nextDesc:'Видеомонтажёр.' },
-        { id:'m-8-3', topic:'media', level:3, city:'Москва', type:'Олимпиада', typeClass:'', title:'Олимпиада «Мир медиа»', meta:'8–11 класс · ~2 часа · до 15 апреля', source:'Источник: Московский Политех', url:'https://mospolytech.ru/', why:'Покажи результат. Финал в Москве.', format:'Очно, Москва', time:'~2 часа', deadline:'15 апреля', nextTitle:'Зарегистрируйся', nextDesc:'Видеоролик.' }
+        { id:'m-8-3', topic:'media', level:3, city:'Москва', type:'Олимпиада', typeClass:'', title:'Олимпиада «Мир медиа»', meta:'8–11 класс · ~2 часа', source:'Источник: Московский Политех', url:'https://mospolytech.ru/', why:'Покажи результат.', format:'Очно, Москва', time:'~2 часа', deadline:'15 апреля', nextTitle:'Зарегистрируйся', nextDesc:'Видеоролик.' }
       ],
       "9": [
         { id:'m-9-1', topic:'media', level:1, city:'online', type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Начни с простого.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Сертификат.' },
         { id:'m-9-2', topic:'media', level:2, city:'online', type:'Конкурс', typeClass:'contest', title:'ArtMasters Юниоры', meta:'14–17 лет · ~3 часа', source:'Источник: ArtMasters', url:'https://artmasters.ru/', why:'Углубись.', format:'Онлайн', time:'~3 часа', deadline:'Апрель', nextTitle:'Выбери компетенцию', nextDesc:'Видеомонтажёр.' },
-        { id:'m-9-3', topic:'media', level:3, city:'Москва', type:'Олимпиада', typeClass:'', title:'Олимпиада «Мир медиа»', meta:'9 класс · ~2 часа · до 15 апреля', source:'Источник: Московский Политех', url:'https://mospolytech.ru/', why:'Покажи результат.', format:'Очно, Москва', time:'~2 часа', deadline:'15 апреля', nextTitle:'Зарегистрируйся', nextDesc:'Видеоролик.' }
+        { id:'m-9-3', topic:'media', level:3, city:'Москва', type:'Олимпиада', typeClass:'', title:'Олимпиада «Мир медиа»', meta:'9 класс · ~2 часа', source:'Источник: Московский Политех', url:'https://mospolytech.ru/', why:'Покажи результат.', format:'Очно, Москва', time:'~2 часа', deadline:'15 апреля', nextTitle:'Зарегистрируйся', nextDesc:'Видеоролик.' }
       ],
       "10": [
         { id:'m-10-1', topic:'media', level:1, city:'online', type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Начни с простого.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Сертификат.' },
         { id:'m-10-2', topic:'media', level:2, city:'online', type:'Конкурс', typeClass:'contest', title:'ArtMasters Юниоры', meta:'14–17 лет · ~3 часа', source:'Источник: ArtMasters', url:'https://artmasters.ru/', why:'Углубись.', format:'Онлайн', time:'~3 часа', deadline:'Апрель', nextTitle:'Выбери компетенцию', nextDesc:'Видеомонтажёр.' },
-        { id:'m-10-3', topic:'media', level:3, city:'Москва', type:'Олимпиада', typeClass:'', title:'Олимпиада «Мир медиа»', meta:'10 класс · ~2 часа · до 15 апреля', source:'Источник: Московский Политех', url:'https://mospolytech.ru/', why:'Покажи результат.', format:'Очно, Москва', time:'~2 часа', deadline:'15 апреля', nextTitle:'Зарегистрируйся', nextDesc:'Видеоролик.' }
+        { id:'m-10-3', topic:'media', level:3, city:'Москва', type:'Олимпиада', typeClass:'', title:'Олимпиада «Мир медиа»', meta:'10 класс · ~2 часа', source:'Источник: Московский Политех', url:'https://mospolytech.ru/', why:'Покажи результат.', format:'Очно, Москва', time:'~2 часа', deadline:'15 апреля', nextTitle:'Зарегистрируйся', nextDesc:'Видеоролик.' }
       ],
       "11": [
         { id:'m-11-1', topic:'media', level:1, city:'online', type:'Олимпиада', typeClass:'', title:'Олимпиада «Безопасность начинается с тебя»', meta:'1–11 класс · ~1 час', source:'Источник: Учи.ру / МЧС', url:'https://safety-mchs.uchi.ru/', why:'Начни с простого.', format:'Онлайн', time:'~1 час', deadline:'До 29 июня', nextTitle:'Пройди олимпиаду', nextDesc:'Сертификат.' },
         { id:'m-11-2', topic:'media', level:2, city:'online', type:'Конкурс', typeClass:'contest', title:'ArtMasters Юниоры', meta:'14–17 лет · ~3 часа', source:'Источник: ArtMasters', url:'https://artmasters.ru/', why:'Углубись.', format:'Онлайн', time:'~3 часа', deadline:'Апрель', nextTitle:'Выбери компетенцию', nextDesc:'Видеомонтажёр.' },
-        { id:'m-11-3', topic:'media', level:3, city:'Москва', type:'Олимпиада', typeClass:'', title:'Олимпиада «Мир медиа»', meta:'11 класс · ~2 часа · до 15 апреля', source:'Источник: Московский Политех', url:'https://mospolytech.ru/', why:'Покажи результат.', format:'Очно, Москва', time:'~2 часа', deadline:'15 апреля', nextTitle:'Зарегистрируйся', nextDesc:'Видеоролик.' }
+        { id:'m-11-3', topic:'media', level:3, city:'Москва', type:'Олимпиада', typeClass:'', title:'Олимпиада «Мир медиа»', meta:'11 класс · ~2 часа', source:'Источник: Московский Политех', url:'https://mospolytech.ru/', why:'Покажи результат.', format:'Очно, Москва', time:'~2 часа', deadline:'15 апреля', nextTitle:'Зарегистрируйся', nextDesc:'Видеоролик.' }
       ]
     },
     unknown: {
@@ -820,6 +822,7 @@
     const o = allOpportunities[id];
     if (!o) return;
     currentLevel = o.level;
+    if (o.level > maxLevel) maxLevel = o.level;
     document.getElementById('detail-title').textContent = o.title;
     document.getElementById('detail-why').textContent = o.why;
     document.getElementById('detail-format').textContent = o.format;
@@ -852,7 +855,7 @@
 
   function renderPath() {
     document.getElementById('path-direction').textContent = topicLabels[selectedInterest] || '🤷 Не знаю';
-    const lvl = currentLevel;
+    const lvl = maxLevel;
     document.getElementById('path-sub').textContent = `Твой прогресс · уровень ${lvl} из 3`;
     const bars = document.querySelectorAll('#path-progress span');
     bars.forEach((b, i) => {
@@ -871,23 +874,26 @@
       else dot.textContent = '🔒';
     }
     const btn = document.getElementById('path-btn');
-    if (lvl >= 3) {
+    const noHigher = !hasOpportunityAbove(maxLevel);
+    if (lvl >= 3 || noHigher) {
       btn.textContent = '🏆 Завершить путь';
     } else {
       btn.textContent = 'Посмотреть следующий шаг';
     }
   }
 
+  function hasOpportunityAbove(level) {
+    const byGrade = dataByInterest[selectedInterest] || {};
+    const list = byGrade[selectedGrade] || [];
+    return list.some(o => o.level > level && matchesCity(o) && !rejectedIds.includes(o.id));
+  }
+
   function nextRecommendation() {
     const current = allOpportunities[currentOppId];
-    if (!current) {
-      goTo('screen-start');
-      return;
-    }
-    if (currentLevel >= 3) {
-      showFinal();
-      return;
-    }
+    if (!current) { goTo('screen-start'); return; }
+    if (maxLevel >= 3) { showFinal(); return; }
+    const noHigher = !hasOpportunityAbove(maxLevel);
+    if (noHigher) { showFinal(); return; }
     let targetTopic = current.topic;
     let targetLevel = current.level;
     if (lastFeedback === 'fire') {
@@ -928,6 +934,7 @@
     const neighbor = neighborTopic[selectedInterest];
     selectedInterest = neighbor;
     currentLevel = 1;
+    maxLevel = 1;
     rejectedIds = [];
     document.querySelectorAll('#interest-chips .chip').forEach(c => {
       if (c.dataset.value === neighbor) c.classList.add('selected');
@@ -939,6 +946,7 @@
 
   function restartPath() {
     currentLevel = 1;
+    maxLevel = 1;
     rejectedIds = [];
     goTo('screen-start');
   }
