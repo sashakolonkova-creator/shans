@@ -169,6 +169,86 @@
   .empty-state { text-align: center; padding: 40px 20px; }
   .empty-state h3 { font-size: 18px; margin-bottom: 10px; }
   .empty-state p { color: #8a8a95; font-size: 14px; line-height: 1.5; }
+
+  /* ===== ФИНАЛЬНЫЙ ЭКРАН ===== */
+  .final-card {
+    background: linear-gradient(135deg, #ff6a3d 0%, #ff3d77 50%, #8b3dff 100%);
+    border-radius: 24px;
+    padding: 32px 24px;
+    text-align: center;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .final-card::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.25), transparent 60%);
+    pointer-events: none;
+  }
+  .final-card .trophy {
+    font-size: 56px;
+    margin-bottom: 12px;
+    position: relative;
+    animation: trophyBounce 2s ease-in-out infinite;
+  }
+  @keyframes trophyBounce {
+    0%, 100% { transform: translateY(0) rotate(-3deg); }
+    50% { transform: translateY(-6px) rotate(3deg); }
+  }
+  .final-card h2 {
+    font-size: 26px;
+    font-weight: 800;
+    margin-bottom: 8px;
+    position: relative;
+  }
+  .final-card .final-topic {
+    font-size: 18px;
+    font-weight: 700;
+    opacity: 0.95;
+    position: relative;
+  }
+  .final-list {
+    background: #1a1a22;
+    border: 1px solid #262630;
+    border-radius: 18px;
+    padding: 18px;
+    margin-bottom: 14px;
+  }
+  .final-list .final-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    font-size: 15px;
+    border-bottom: 1px solid #1c1c24;
+  }
+  .final-list .final-item:last-child { border-bottom: none; }
+  .final-list .final-item .check {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ff6a3d, #ff3d77);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .final-message {
+    background: #1a1a22;
+    border: 1px solid #262630;
+    border-radius: 18px;
+    padding: 18px;
+    text-align: center;
+    font-size: 15px;
+    line-height: 1.6;
+    color: #d0d0d8;
+    margin-bottom: 14px;
+  }
+  .final-message b { color: #fff; }
+
   @media (max-width: 768px) {
     .app { max-width: 100%; background: #0e0e12; backdrop-filter: none; -webkit-backdrop-filter: none; border-left: none; border-right: none; border-radius: 0; box-shadow: none; }
   }
@@ -201,6 +281,12 @@
     .path-direction { font-size: 20px; }
     .path-item { font-size: 14px; padding: 10px 0; }
     .path-item .dot { width: 24px; height: 24px; font-size: 12px; }
+    .final-card { padding: 24px 18px; }
+    .final-card .trophy { font-size: 44px; }
+    .final-card h2 { font-size: 22px; }
+    .final-card .final-topic { font-size: 16px; }
+    .final-list { padding: 14px; }
+    .final-list .final-item { font-size: 14px; }
   }
 </style>
 </head>
@@ -384,7 +470,35 @@
         Показать результат
       </div>
 
-      <button class="btn" style="margin-top:20px;" onclick="nextRecommendation()">Посмотреть следующий шаг</button>
+      <button class="btn" id="path-btn" style="margin-top:20px;" onclick="nextRecommendation()">Посмотреть следующий шаг</button>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-final">
+    <div class="screen-header">
+      <button class="back" onclick="goTo('screen-path')">←</button>
+      <h1>Итоги</h1>
+    </div>
+    <div class="content">
+      <div class="final-card">
+        <div class="trophy">🏆</div>
+        <h2>Ты прошёл путь</h2>
+        <div class="final-topic" id="final-topic">🎨 Дизайн</div>
+      </div>
+
+      <div class="final-list">
+        <div class="final-item"><div class="check">✓</div> Узнал о направлении</div>
+        <div class="final-item"><div class="check">✓</div> Попробовал первое задание</div>
+        <div class="final-item"><div class="check">✓</div> Углубился в тему</div>
+        <div class="final-item"><div class="check">✓</div> Показал результат</div>
+      </div>
+
+      <div class="final-message" id="final-message">
+        У тебя теперь есть опыт в <b>Дизайне</b>. Ты можешь углубиться ещё сильнее или попробовать смежное направление.
+      </div>
+
+      <button class="btn" id="final-next-topic" onclick="startNeighborTopic()">Попробовать смежную тему</button>
+      <button class="btn secondary" onclick="restartPath()">Начать новый путь</button>
     </div>
   </div>
 
@@ -404,7 +518,7 @@
   let rejectedIds = [];
   let lastFeedback = null;
   let currentOppId = null;
-  let currentLevel = 1; // текущий уровень прогресса
+  let currentLevel = 1;
 
   document.querySelectorAll('#interest-chips .chip').forEach(chip => {
     chip.addEventListener('click', () => {
@@ -432,10 +546,7 @@
     });
   });
 
-  // ===== ДАННЫЕ (сокращённая версия, полная — та же структура) =====
-  // topic: it / design / science / business / media / unknown
-  // level: 1 / 2 / 3
-  // city: конкретный город или 'online'
+  // ===== ДАННЫЕ (та же структура, что раньше) =====
   const dataByInterest = {
     it: {
       "1-4": [
@@ -668,6 +779,7 @@
 
   const neighborTopic = { it:'science', science:'it', design:'media', media:'design', business:'science', unknown:'it' };
   const topicLabels = { it:'💻 IT', design:'🎨 Дизайн', science:'🔬 Наука', business:'💼 Бизнес', media:'🎤 Медиа', unknown:'🤷 Не знаю' };
+  const topicNames = { it:'IT', design:'Дизайне', science:'Науке', business:'Бизнесе', media:'Медиа', unknown:'новых темах' };
 
   function matchesCity(o) {
     if (selectedCity === 'online' || selectedCity === 'other') return o.city === 'online';
@@ -747,20 +859,15 @@
     });
   });
 
-  // ===== РЕНДЕР ЭКРАНА «МОЙ ПУТЬ» =====
   function renderPath() {
-    // заголовок темы
     document.getElementById('path-direction').textContent = topicLabels[selectedInterest] || '🤷 Не знаю';
-    // прогресс
     const lvl = currentLevel;
     document.getElementById('path-sub').textContent = `Твой прогресс · уровень ${lvl} из 3`;
-    // полоски
     const bars = document.querySelectorAll('#path-progress span');
     bars.forEach((b, i) => {
       if (i < lvl) b.classList.add('done');
       else b.classList.remove('done');
     });
-    // точки
     for (let i = 1; i <= 3; i++) {
       const item = document.getElementById('path-item-' + i);
       const dot = item.querySelector('.dot');
@@ -768,10 +875,16 @@
       if (i < lvl) dot.classList.add('done');
       else if (i === lvl) dot.classList.add('active');
       else dot.classList.add('locked');
-      // символы
       if (i < lvl) dot.textContent = '✓';
       else if (i === lvl) dot.textContent = '🔥';
       else dot.textContent = '🔒';
+    }
+    // если пользователь на 3-м уровне — меняем текст кнопки
+    const btn = document.getElementById('path-btn');
+    if (lvl >= 3) {
+      btn.textContent = '🏆 Завершить путь';
+    } else {
+      btn.textContent = 'Посмотреть следующий шаг';
     }
   }
 
@@ -779,6 +892,12 @@
     const current = allOpportunities[currentOppId];
     if (!current) {
       goTo('screen-start');
+      return;
+    }
+
+    // если уже на 3-м уровне — показываем финал
+    if (currentLevel >= 3) {
+      showFinal();
       return;
     }
 
@@ -794,7 +913,6 @@
       targetTopic = neighborTopic[current.topic] || 'unknown';
     }
 
-    // обновляем currentLevel для отображения прогресса
     currentLevel = targetLevel;
 
     let found = findOpportunity(targetTopic, targetLevel);
@@ -806,16 +924,47 @@
       openDetail(found.id);
       goTo('screen-detail');
     } else {
-      document.querySelector('#screen-path .content').innerHTML = `
-        <div class="path-direction">🎯 Ты на максимуме</div>
-        <div class="path-sub">В этой теме больше нечего предложить</div>
-        <div class="empty-state">
-          <h3>🔥 Ты прошёл всё!</h3>
-          <p>Попробуй смежную тему — например, «${topicLabels[neighborTopic[current.topic]] || 'IT'}».</p>
-        </div>
-        <button class="btn" onclick="goTo('screen-start')">Вернуться в начало</button>
-      `;
+      showFinal();
     }
+  }
+
+  // ===== ФИНАЛЬНЫЙ ЭКРАН =====
+  function showFinal() {
+    const topicLabel = topicLabels[selectedInterest] || '🤷 Не знаю';
+    const topicName = topicNames[selectedInterest] || 'новых темах';
+    const neighbor = neighborTopic[selectedInterest];
+    const neighborLabel = topicLabels[neighbor] || 'IT';
+
+    document.getElementById('final-topic').textContent = topicLabel;
+    document.getElementById('final-message').innerHTML =
+      `У тебя теперь есть опыт в <b>${topicName}</b>. Ты можешь попробовать смежное направление или начать новый путь.`;
+    document.getElementById('final-next-topic').textContent = `Попробовать ${neighborLabel}`;
+    document.getElementById('final-next-topic').onclick = () => startNeighborTopic();
+    goTo('screen-final');
+  }
+
+  function startNeighborTopic() {
+    // переключаемся на смежную тему
+    const neighbor = neighborTopic[selectedInterest];
+    selectedInterest = neighbor;
+    // сбрасываем прогресс
+    currentLevel = 1;
+    rejectedIds = [];
+    // обновляем чип на старте
+    document.querySelectorAll('#interest-chips .chip').forEach(c => {
+      if (c.dataset.value === neighbor) c.classList.add('selected');
+      else c.classList.remove('selected');
+    });
+    // идём на подбор
+    renderMatchCards();
+    goTo('screen-match');
+  }
+
+  function restartPath() {
+    // сброс всего и возврат к началу
+    currentLevel = 1;
+    rejectedIds = [];
+    goTo('screen-start');
   }
 
   function findOpportunity(topic, level) {
